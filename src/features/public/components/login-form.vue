@@ -7,6 +7,14 @@ import {
 import { Button } from '@/shared/components/ui/button'
 import { Input } from '@/shared/components/ui/input'
 
+interface Props {
+  embedded?: boolean
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  embedded: false,
+})
+
 const {
   username,
   password,
@@ -18,25 +26,39 @@ const {
 </script>
 
 <template>
-  <section class="flex flex-col gap-7">
-    <header class="flex flex-col gap-2.5">
+  <section class="flex flex-col" :class="props.embedded ? 'gap-4' : 'gap-7'">
+    <header class="flex flex-col" :class="props.embedded ? 'gap-1' : 'gap-2.5'">
       <h1
-        class="m-0 text-[28px] font-bold leading-[1.2] tracking-[-0.6px] text-hw-gray-darker"
+        class="m-0 font-bold leading-[1.2] tracking-[-0.6px] text-hw-gray-darker"
+        :class="props.embedded ? 'text-h4' : 'text-[28px]'"
       >
         {{ LOGIN_HEADING }}
       </h1>
-      <p class="m-0 text-[15px] font-normal leading-[1.4] text-hw-gray-main">
+      <p
+        class="m-0 font-normal text-hw-gray-main"
+        :class="props.embedded ? 'text-c1' : 'text-[15px] leading-[1.4]'"
+      >
         {{ LOGIN_SUBHEADING }}
       </p>
     </header>
 
-    <form class="flex flex-col gap-5" @submit.prevent="submit">
-      <label class="flex flex-col gap-2">
-        <span class="text-sm font-semibold leading-none text-hw-gray-dark"
+    <form
+      class="flex flex-col"
+      :class="props.embedded ? 'gap-3' : 'gap-5'"
+      @submit.prevent="submit"
+    >
+      <label
+        class="flex flex-col"
+        :class="props.embedded ? 'gap-1.5' : 'gap-2'"
+      >
+        <span
+          class="font-semibold leading-none text-hw-gray-dark"
+          :class="props.embedded ? 'text-c1' : 'text-sm'"
           >아이디</span
         >
         <span
-          class="flex h-[50px] items-center rounded-md border border-hw-gray-lighter bg-hw-white-main px-3.5 transition-[border-color,box-shadow] duration-[160ms] ease-smooth focus-within:border-hw-orange-main focus-within:shadow-[0_0_0_3px_rgba(243,115,33,0.14)]"
+          class="flex items-center rounded-md border border-hw-gray-lighter bg-hw-white-main px-3.5 transition-[border-color,box-shadow] duration-[160ms] ease-smooth focus-within:border-hw-orange-main focus-within:shadow-[0_0_0_3px_rgba(243,115,33,0.14)]"
+          :class="props.embedded ? 'h-10' : 'h-[50px]'"
         >
           <i
             class="ti ti-user mr-2.5 flex-shrink-0 text-xl text-hw-gray-main"
@@ -52,12 +74,18 @@ const {
         </span>
       </label>
 
-      <label class="flex flex-col gap-2">
-        <span class="text-sm font-semibold leading-none text-hw-gray-dark"
+      <label
+        class="flex flex-col"
+        :class="props.embedded ? 'gap-1.5' : 'gap-2'"
+      >
+        <span
+          class="font-semibold leading-none text-hw-gray-dark"
+          :class="props.embedded ? 'text-c1' : 'text-sm'"
           >비밀번호</span
         >
         <span
-          class="flex h-[50px] items-center rounded-md border border-hw-gray-lighter bg-hw-white-main px-3.5 transition-[border-color,box-shadow] duration-[160ms] ease-smooth focus-within:border-hw-orange-main focus-within:shadow-[0_0_0_3px_rgba(243,115,33,0.14)]"
+          class="flex items-center rounded-md border border-hw-gray-lighter bg-hw-white-main px-3.5 transition-[border-color,box-shadow] duration-[160ms] ease-smooth focus-within:border-hw-orange-main focus-within:shadow-[0_0_0_3px_rgba(243,115,33,0.14)]"
+          :class="props.embedded ? 'h-10' : 'h-[50px]'"
         >
           <i
             class="ti ti-lock mr-2.5 flex-shrink-0 text-xl text-hw-gray-main"
@@ -91,7 +119,8 @@ const {
         type="submit"
         variant="brand"
         size="brand"
-        class="mt-1 h-[52px] rounded-md text-base font-bold tracking-[-0.3px]"
+        class="mt-1 rounded-md font-bold tracking-[-0.3px]"
+        :class="props.embedded ? 'h-10 text-sm' : 'h-[52px] text-base'"
         :disabled="submitting"
       >
         로그인

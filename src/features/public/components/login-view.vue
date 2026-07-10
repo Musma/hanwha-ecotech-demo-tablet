@@ -19,24 +19,33 @@ const props = withDefaults(defineProps<Props>(), {
     :class="props.embedded ? 'h-full' : 'h-screen'"
   >
     <div
-      class="flex w-[460px] max-w-full flex-shrink-0 flex-col overflow-y-auto bg-hw-white-main max-[880px]:w-full"
+      class="flex w-[460px] max-w-full flex-shrink-0 flex-col bg-hw-white-main max-[880px]:w-full"
+      :class="props.embedded ? 'overflow-hidden' : 'overflow-y-auto'"
     >
-      <div class="flex flex-1 flex-col gap-9 px-12 py-[56px]">
+      <div
+        class="flex flex-1 flex-col"
+        :class="props.embedded ? 'gap-4 px-7 py-5' : 'gap-9 px-12 py-[56px]'"
+      >
         <div class="flex items-center gap-3">
           <img
             :src="hanwhaMarkUrl"
             alt="Hanwha"
-            class="h-10 w-11 flex-shrink-0 object-contain"
+            class="flex-shrink-0 object-contain"
+            :class="props.embedded ? 'h-8 w-9' : 'h-10 w-11'"
           />
           <span
-            class="text-[22px] font-bold leading-[1.2] tracking-[-0.5px] text-hw-gray-darker"
+            class="font-bold leading-[1.2] tracking-[-0.5px] text-hw-gray-darker"
+            :class="props.embedded ? 'text-h5' : 'text-[22px]'"
             >{{ LOGIN_BRAND_NAME }}</span
           >
         </div>
 
-        <LoginForm class="mt-3" />
+        <LoginForm
+          :embedded="props.embedded"
+          :class="{ 'mt-3': !props.embedded }"
+        />
 
-        <LoginInfoFooter class="mt-auto" />
+        <LoginInfoFooter :embedded="props.embedded" class="mt-auto" />
       </div>
     </div>
 
