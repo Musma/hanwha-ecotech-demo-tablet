@@ -6,7 +6,10 @@ import LoginView from '@/features/public/components/login-view.vue'
 const router = useRouter()
 
 function handleLoginSuccess() {
-  void router.push('/dashboard')
+  void router.push({
+    name: 'dashboard',
+    query: { screen: 'work-list' },
+  })
 }
 </script>
 

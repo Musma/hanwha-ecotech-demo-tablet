@@ -8,18 +8,41 @@ import WorkListPanel from '@/features/logged/dashboard/components/work-list-pane
 import { WORK_ITEMS } from '@/features/logged/dashboard/constants/work-list'
 import type { WorkListTab } from '@/features/logged/dashboard/types/work-list'
 
+interface Props {
+  embedded?: boolean
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  embedded: false,
+})
+const emit = defineEmits<{
+  logout: []
+}>()
+
 const router = useRouter()
 const activeTab = shallowRef<WorkListTab>('pending')
 
 function logout() {
+  if (props.embedded) {
+    emit('logout')
+    return
+  }
   void router.push('/login')
 }
 </script>
 
 <template>
-  <div class="h-screen overflow-hidden bg-hw-gray-dark p-4">
+  <div
+    class="overflow-hidden"
+    :class="
+      props.embedded
+        ? 'h-full bg-hw-white-main'
+        : 'h-screen bg-hw-gray-dark p-4'
+    "
+  >
     <div
-      class="flex h-full min-h-0 flex-col overflow-hidden bg-hw-white-main shadow-2xl"
+      class="flex h-full min-h-0 flex-col overflow-hidden bg-hw-white-main"
+      :class="{ 'shadow-2xl': !props.embedded }"
     >
       <WorkListHeader
         employee-name="홍길동"

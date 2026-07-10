@@ -2,14 +2,32 @@
 import { shallowRef } from 'vue'
 
 import TabletUnlockSlider from '@/features/logged/dashboard/components/tablet-unlock-slider.vue'
+import WorkListView from '@/features/logged/dashboard/components/work-list-view.vue'
 import { useTabletClock } from '@/features/logged/dashboard/composables/use-tablet-clock'
+import type { TabletScreen } from '@/features/logged/dashboard/types/tablet'
 import LoginView from '@/features/public/components/login-view.vue'
 
-const unlocked = shallowRef(false)
+interface Props {
+  initialScreen?: TabletScreen
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  initialScreen: 'locked',
+})
+
+const activeScreen = shallowRef<TabletScreen>(props.initialScreen)
 const { currentDate, currentTime } = useTabletClock()
 
 function unlockTablet() {
-  unlocked.value = true
+  activeScreen.value = 'login'
+}
+
+function showLogin() {
+  activeScreen.value = 'login'
+}
+
+function showWorkList() {
+  activeScreen.value = 'work-list'
 }
 </script>
 
@@ -52,7 +70,7 @@ function unlockTablet() {
             leave-to-class="opacity-0 scale-[0.99]"
           >
             <div
-              v-if="!unlocked"
+              v-if="activeScreen === 'locked'"
               key="locked"
               class="relative flex h-full flex-col items-center overflow-hidden bg-[url('/login.webp')] bg-cover bg-center p-6 text-center text-hw-white-main"
             >
@@ -74,9 +92,15 @@ function unlockTablet() {
               />
             </div>
 
-            <div v-else key="login" class="h-full bg-hw-white-main">
-              <LoginView embedded />
+            <div
+              v-else-if="activeScreen === 'login'"
+              key="login"
+              class="h-full bg-hw-white-main"
+            >
+              <LoginView embedded @success="showWorkList" />
             </div>
+
+            <WorkListView v-else key="work-list" embedded @logout="showLogin" />
           </Transition>
         </div>
       </div>
