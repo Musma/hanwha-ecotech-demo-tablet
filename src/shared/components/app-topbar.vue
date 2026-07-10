@@ -1,34 +1,27 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useRoute } from 'vue-router'
-
+import hanwhaMarkUrl from '@/assets/images/hanwha-mark.svg'
 import { Button } from '@/shared/components/ui/button'
-import { APP_NAV_ITEMS } from '@/shared/constants/nav'
-
-const route = useRoute()
-
-const currentLabel = computed(() => {
-  const match = APP_NAV_ITEMS.find((item) => item.to && item.to === route.path)
-  return match?.label ?? '대시보드'
-})
 </script>
 
 <template>
   <header
     class="flex items-center justify-between flex-shrink-0 h-[56px] px-6 bg-hw-white-main border-b border-hw-white-dark"
   >
-    <div class="flex items-center gap-2">
-      <i class="ti ti-home text-xl text-hw-gray-darker" />
-      <i class="ti ti-chevron-right text-base text-hw-gray-light" />
+    <div class="flex min-w-0 items-center gap-2.5">
+      <img
+        :src="hanwhaMarkUrl"
+        alt="Hanwha"
+        class="h-7 w-8 flex-shrink-0 object-contain"
+      />
       <span
-        class="font-semibold text-base leading-none tracking-[-0.3px] text-hw-gray-darker"
-        >{{ currentLabel }}</span
+        class="min-w-0 truncate font-hanwha text-h6 font-bold leading-[1.2] tracking-[-0.4px] text-hw-gray-darker"
+        >한화오션에코텍</span
       >
     </div>
 
     <div class="flex items-center gap-3.5">
       <span
-        class="font-normal text-sm leading-none tracking-[-0.2px] text-hw-gray-dark"
+        class="font-normal text-sm leading-none tracking-[-0.2px] text-hw-gray-dark max-[640px]:hidden"
       >
         <b class="font-semibold text-hw-gray-darker">홍길동</b>님 로그인
         되었습니다.

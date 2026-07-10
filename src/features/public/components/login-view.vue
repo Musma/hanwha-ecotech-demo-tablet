@@ -3,10 +3,21 @@ import hanwhaMarkUrl from '@/assets/images/hanwha-mark.svg'
 import LoginForm from '@/features/public/components/login-form.vue'
 import LoginInfoFooter from '@/features/public/components/login-info-footer.vue'
 import { LOGIN_BRAND_NAME } from '@/features/public/constants/login'
+
+interface Props {
+  embedded?: boolean
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  embedded: false,
+})
 </script>
 
 <template>
-  <div class="flex h-screen w-full overflow-hidden bg-hw-white-main">
+  <div
+    class="flex w-full overflow-hidden bg-hw-white-main"
+    :class="props.embedded ? 'h-full' : 'h-screen'"
+  >
     <div
       class="flex w-[460px] max-w-full flex-shrink-0 flex-col overflow-y-auto bg-hw-white-main max-[880px]:w-full"
     >
