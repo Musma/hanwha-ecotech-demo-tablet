@@ -42,7 +42,7 @@ const props = withDefaults(defineProps<Props>(), {
 
         <LoginForm
           :embedded="props.embedded"
-          :class="{ 'mt-3': !props.embedded }"
+          :class="props.embedded ? 'mt-auto' : 'mt-3'"
         />
 
         <LoginInfoFooter :embedded="props.embedded" class="mt-auto" />
