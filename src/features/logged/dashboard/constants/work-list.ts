@@ -3,6 +3,8 @@ import type {
   WorkTabItem,
 } from '@/features/logged/dashboard/types/work-list'
 
+export const WORK_TEST_DESTINATION_CODE = 'R1'
+
 export const WORK_LIST_TABS: WorkTabItem[] = [
   { key: 'all', label: '전체', count: 10 },
   { key: 'pending', label: '대기', count: 4 },

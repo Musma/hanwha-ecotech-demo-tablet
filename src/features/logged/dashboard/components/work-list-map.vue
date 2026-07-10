@@ -8,6 +8,8 @@ import { onMounted, onUnmounted, shallowRef, useTemplateRef } from 'vue'
 
 import 'maplibre-gl/dist/maplibre-gl.css'
 
+import { useWorkMapExecution } from '@/features/logged/dashboard/composables/use-work-map-execution'
+import type { WorkExecutionPhase } from '@/features/logged/dashboard/types/work-list'
 import { JIBUN_SEED } from '@/features/logged/jibun/constants/jibun-data'
 import { getMapLibreStyle } from '@/shared/constants/map'
 import {
@@ -19,6 +21,19 @@ import {
 import { createYardJibunPolygons } from '@/shared/helpers/map/yard-jibun-polygons'
 
 import type { Feature, MultiPolygon, Position } from 'geojson'
+
+interface Props {
+  departureCode?: string
+  destinationCode: string
+  executionPhase: WorkExecutionPhase
+  objectCode?: string
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  departureCode: '',
+  executionPhase: 'waiting',
+  objectCode: '',
+})
 
 interface ParcelFeatureProperties {
   fill: string
@@ -47,6 +62,12 @@ const mapReady = shallowRef(false)
 const labelMarkerRefs = shallowRef<Marker[]>([])
 const vehicleMarkerRef = shallowRef<Marker | null>(null)
 const resizeObserverRef = shallowRef<ResizeObserver | null>(null)
+const { attachMapExecution } = useWorkMapExecution({
+  departureCode: () => props.departureCode,
+  destinationCode: () => props.destinationCode,
+  executionPhase: () => props.executionPhase,
+  objectCode: () => props.objectCode,
+})
 
 const parcelPolygons = createYardJibunPolygons(JIBUN_SEED, {
   lat: YARD_DEFAULT_CENTER[1],
@@ -137,6 +158,7 @@ function addVehicleMarker(map: MapLibreMap) {
 
   const element = document.createElement('div')
   element.className = 'dashboard-map-marker dashboard-map-marker--vehicle'
+  element.style.zIndex = '3'
   element.title = '차량'
 
   const waves = Array.from({ length: 3 }, () => {
@@ -160,6 +182,13 @@ function addVehicleMarker(map: MapLibreMap) {
   })
     .setLngLat(vehiclePosition)
     .addTo(map)
+
+  attachMapExecution({
+    map,
+    vehicleMarker: vehicleMarkerRef.value,
+    start: [vehiclePosition.lng, vehiclePosition.lat],
+    destination: [center.lng, center.lat],
+  })
 }
 
 function initializeMap() {

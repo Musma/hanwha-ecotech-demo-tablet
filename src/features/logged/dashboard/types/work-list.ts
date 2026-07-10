@@ -2,6 +2,8 @@ export type WorkListTab = 'all' | 'pending' | 'complete'
 
 export type WorkStatus = Exclude<WorkListTab, 'all'>
 
+export type WorkExecutionPhase = 'waiting' | 'inProgress' | 'completed'
+
 export interface WorkDetail {
   completedAt: string
   description: string
