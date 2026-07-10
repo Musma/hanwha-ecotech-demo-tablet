@@ -1,0 +1,4 @@
+interface:
+  display_name: "TanStack Query Init"
+  short_description: "TanStack Query 초기 세팅과 Provider 연결"
+  default_prompt: "Use $tanstack-query-init to add or align TanStack Query setup for this repository's framework."

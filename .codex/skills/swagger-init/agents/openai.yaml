@@ -1,0 +1,4 @@
+interface:
+  display_name: "Swagger Init"
+  short_description: "Swagger 부트스트랩과 초기 세팅 담당"
+  default_prompt: "Use $swagger-init to add the missing Swagger bootstrap pieces in this repository so generation can run cleanly."

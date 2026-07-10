@@ -1,0 +1,4 @@
+interface:
+  display_name: "Init Vue Service App"
+  short_description: "Create a Vue service app with shadcn-vue"
+  default_prompt: "Create a new Vue service app, then set up shadcn-vue with default button and input components."

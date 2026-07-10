@@ -1,0 +1,4 @@
+interface:
+  display_name: "API Client Orchestrator"
+  short_description: "API client, axios, query 흐름 총괄"
+  default_prompt: "Use $api-client-orchestrator to inspect this repository and wire the right API client, axios, and TanStack Query setup."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Setup shadcn-vue"
+  short_description: "Install shadcn-vue in a Vue service"
+  default_prompt: "Set up shadcn-vue in this Vue project following FOLDER_STRUCTURE.md and add button and input components."

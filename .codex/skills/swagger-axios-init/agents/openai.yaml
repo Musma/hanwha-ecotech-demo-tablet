@@ -1,0 +1,4 @@
+interface:
+  display_name: "Swagger Axios Init"
+  short_description: "Swagger 클래스와 axios 인스턴스 연결"
+  default_prompt: "Use $swagger-axios-init to connect a generated Swagger API class to this repository's shared axios instance."

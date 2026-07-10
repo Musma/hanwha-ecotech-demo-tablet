@@ -1,0 +1,4 @@
+interface:
+  display_name: "Swagger Orchestrator"
+  short_description: "Swagger 조사, 초기화, 생성 흐름을 총괄"
+  default_prompt: "Use $swagger-orchestrator to inspect this repository's Swagger setup, bootstrap anything missing, and run the right generation flow."

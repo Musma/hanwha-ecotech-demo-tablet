@@ -1,0 +1,30 @@
+{
+    "editor.tabSize": 2,
+    "editor.fontSize": 12,
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit"
+    },
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+    "typescript.tsdk": "node_modules/typescript/lib",
+    "files.exclude": {
+      "**/.git": true,
+      "**/.svn": true,
+      "**/.hg": true,
+      "**/CVS": true,
+      "**/.DS_Store": true,
+      "**/Thumbs.db": true,
+      "**/node_modules": true
+    },
+    "explorerExclude.backup": {},
+    "npm.packageManager": "bun",
+    "[vue]": {
+      "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+    },
+    "eslint.validate": [
+      "javascript",
+      "typescript",
+      "vue"
+    ],
+    "eslint.format.enable": true
+}

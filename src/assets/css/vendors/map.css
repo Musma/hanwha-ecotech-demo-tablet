@@ -1,0 +1,373 @@
+/* ============================================================
+   Irreducible layer — MapLibre 서드파티 오버라이드 + JS로 주입되는
+   지도 마커/팝업. 이 요소들은 Vue <template> 마크업이 아니라
+   map-yard-map.vue 스크립트 / jibun-utils.ts 에서 명령형으로
+   생성되므로 유틸리티 클래스로 옮기지 않고 CSS로 유지한다.
+   ============================================================ */
+.map-root--map .maplibreGl-ctrl-bottom-right {
+  margin: 0 14px 14px 0;
+}
+
+/* 폴리곤 이름 라벨 마커 */
+.overlay-name-marker {
+  pointer-events: none;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: rgba(19, 32, 38, 0.58);
+  color: #fff4d0;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.2;
+  white-space: nowrap;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
+}
+
+.overlay-name-marker--parcel {
+  z-index: 1;
+}
+
+.overlay-name-marker--block {
+  z-index: 2;
+}
+
+/* 블록 위치 확인 포커스 마커 (핀) */
+.block-focus-marker {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 5px 9px 7px;
+  border-radius: 8px;
+  background: #f37321;
+  color: #fff;
+  border: 2px solid #fff;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.35);
+  z-index: 5;
+  white-space: nowrap;
+  transform: translateY(-6px);
+}
+
+.block-focus-marker::after {
+  content: "";
+  position: absolute;
+  bottom: -7px;
+  left: 50%;
+  width: 12px;
+  height: 12px;
+  background: #f37321;
+  border-right: 2px solid #fff;
+  border-bottom: 2px solid #fff;
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.block-focus-marker--material {
+  background: #21a3e6;
+}
+
+.block-focus-marker--material::after {
+  background: #21a3e6;
+}
+
+.block-focus-marker--from {
+  background: #008233;
+}
+
+.block-focus-marker--from::after {
+  background: #008233;
+}
+
+.block-focus-marker--to {
+  background: #f22922;
+}
+
+.block-focus-marker--to::after {
+  background: #f22922;
+}
+
+.block-focus-marker__no {
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.2px;
+}
+
+.block-focus-marker__sub {
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1.1;
+  opacity: 0.92;
+}
+
+/* 블록/자재/설비 검색·전체보기 핀 마커 */
+.map-entity-marker {
+  position: relative;
+  padding: 3px 8px 5px;
+  border-radius: 7px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #fff;
+  border: 1.5px solid #fff;
+  box-shadow: 0 2px 7px rgba(0, 0, 0, 0.32);
+  white-space: nowrap;
+  cursor: pointer;
+  transform: translateY(-6px);
+}
+
+.map-entity-marker::after {
+  content: "";
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  width: 10px;
+  height: 10px;
+  border-right: 1.5px solid #fff;
+  border-bottom: 1.5px solid #fff;
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.map-entity-marker--block,
+.map-entity-marker--block::after {
+  background: #f37321;
+}
+
+.map-entity-marker--material,
+.map-entity-marker--material::after {
+  background: #21a3e6;
+}
+
+.map-entity-marker--equip,
+.map-entity-marker--equip::after {
+  background: #008233;
+}
+
+/* 실시간 현재위치(GPS) 마커 */
+.live-marker {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+}
+
+.live-marker__dot {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: #1f6feb;
+  border: 3px solid #fff;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.45);
+  z-index: 2;
+}
+
+.live-marker__pulse {
+  position: absolute;
+  top: -3px;
+  left: 50%;
+  width: 21px;
+  height: 21px;
+  margin-left: -10.5px;
+  border-radius: 50%;
+  background: rgba(31, 111, 235, 0.45);
+  animation: live-pulse 1.6s ease-out infinite;
+  z-index: 1;
+}
+
+.live-marker__label {
+  margin-top: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  color: #fff;
+  background: #1f6feb;
+  padding: 2px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+@keyframes live-pulse {
+  0% {
+    transform: scale(0.5);
+    opacity: 0.85;
+  }
+
+  100% {
+    transform: scale(2.8);
+    opacity: 0;
+  }
+}
+
+/* 핀 클릭 정보 팝업 (jibun-utils.ts) */
+.entity-popup-wrap .maplibreGl-popup-content {
+  padding: 0;
+  overflow: hidden;
+  border-radius: 6px;
+}
+
+.entity-popup-wrap .maplibreGl-popup-close-button {
+  color: #fff;
+  font-size: 16px;
+  padding: 2px 6px;
+  z-index: 1;
+}
+
+.entity-popup__head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+}
+
+.entity-popup--block .entity-popup__head {
+  background: #f37321;
+}
+
+.entity-popup--material .entity-popup__head {
+  background: #21a3e6;
+}
+
+.entity-popup--equip .entity-popup__head {
+  background: #008233;
+}
+
+.entity-popup--dispatch .entity-popup__head {
+  background: #5a4bd1;
+}
+
+.entity-popup__kind {
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.25);
+  padding: 3px 5px;
+  border-radius: 3px;
+}
+
+.entity-popup__title {
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1;
+  color: #fff;
+  letter-spacing: -0.2px;
+}
+
+.entity-popup__sub {
+  padding: 6px 10px 0;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: #1d1f21;
+}
+
+.entity-popup__kv {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 3px 12px;
+  margin: 0;
+  padding: 8px 10px 10px;
+}
+
+.entity-popup__kv dt {
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: #929292;
+}
+
+.entity-popup__kv dd {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.4;
+  color: #1d1f21;
+  text-align: right;
+}
+
+/* 그리드 좌표 팝업 (map-yard-map.vue) */
+.grid-info-popup {
+  display: grid;
+  gap: 6px;
+  min-width: 200px;
+  color: #17212b;
+  font-size: 12px;
+  line-height: 1.45;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.grid-info-popup strong {
+  display: inline-block;
+  min-width: 54px;
+  margin-right: 6px;
+  color: #0f1720;
+  font-size: 11px;
+}
+
+.maplibreGl-popup-content .grid-info-popup,
+.maplibreGl-popup-content .grid-info-popup div {
+  color: #17212b;
+}
+
+.maplibreGl-popup-content .grid-info-popup strong {
+  color: #0f1720;
+}
+
+/* 블록 이미지 마커 + 회전 핸들 (map-yard-map.vue) */
+.block-image-marker {
+  pointer-events: none;
+  position: relative;
+}
+
+.block-image-marker__frame {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform-origin: center center;
+  overflow: visible;
+}
+
+.block-image-marker__image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  user-select: none;
+}
+
+.block-rotate-handle {
+  position: relative;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  cursor: grab;
+}
+
+.block-rotate-handle::before {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  border: 2px solid rgba(255, 244, 208, 0.96);
+  border-right-color: transparent;
+  border-radius: 999px;
+  transform: rotate(-35deg);
+}
+
+.block-rotate-handle::after {
+  content: "";
+  position: absolute;
+  right: 6px;
+  top: 4px;
+  width: 0;
+  height: 0;
+  border-left: 6px solid rgba(255, 244, 208, 0.96);
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+  transform: rotate(18deg);
+}

@@ -1,0 +1,4 @@
+interface:
+  display_name: "API Wrapper Pattern"
+  short_description: "Swagger raw client 위에 wrapper API 정리"
+  default_prompt: "Use $api-wrapper-pattern to create or align feature-level API wrapper functions on top of the generated Swagger client."

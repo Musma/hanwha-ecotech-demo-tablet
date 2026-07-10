@@ -1,0 +1,200 @@
+@custom-variant dark (&:is(.dark *));
+
+/* ============================================================
+   Tailwind v4 CSS-first theme.
+   Colors are written as direct hex values in component classes.
+   ============================================================ */
+@theme {
+  /* ============================================================
+     Color tokens — Figma 디자인 시스템(node 5145-17490, "02. Color")에서
+     추출한 source of truth. 1-tier 색 이름 토큰이며 Figma 이름을 그대로 따른다.
+     사용 예: bg-hw-orange-main, text-hw-gray-dark, border-hw-red-main
+     이 팔레트에 없는 hex 를 컴포넌트에 직접 쓰지 않는다(감지기가 차단).
+     ============================================================ */
+  /* Orange — *Primary */
+  --color-hw-orange-lighter: #fbb584;
+  --color-hw-orange-light: #f89b6c;
+  --color-hw-orange-main: #f37321;
+  --color-hw-orange-dark: #ff6506;
+  --color-hw-orange-darker: #a64e17;
+
+  /* Blue — *Secondary */
+  --color-hw-blue-lighter: #cce7f5;
+  --color-hw-blue-light: #1fd5da;
+  --color-hw-blue-main: #21a3e6;
+  --color-hw-blue-dark: #0a72f2;
+  --color-hw-blue-darker: #3322f2;
+
+  /* Gray */
+  --color-hw-gray-lighter: #dcdcdc;
+  --color-hw-gray-light: #cccccc;
+  --color-hw-gray-main: #929292;
+  --color-hw-gray-dark: #444648;
+  --color-hw-gray-darker: #1d1f21;
+
+  /* White */
+  --color-hw-white-lighter: #f4f6f9;
+  --color-hw-white-light: #f9fafb;
+  --color-hw-white-main: #ffffff;
+  --color-hw-white-dark: #eeeeee;
+  --color-hw-white-darker: #eaeaea;
+
+  /* Red */
+  --color-hw-red-lighter: #f5d4cc;
+  --color-hw-red-light: #f24d22;
+  --color-hw-red-main: #f22922;
+  --color-hw-red-dark: #e40c01;
+  --color-hw-red-darker: #940e0f;
+
+  /* Green */
+  --color-hw-green-lighter: #ddefe4;
+  --color-hw-green-light: #5ecb5e;
+  --color-hw-green-main: #4a9d67;
+  --color-hw-green-dark: #008233;
+  --color-hw-green-darker: #054522;
+
+  /* 그리드 밖 단일 토큰 */
+  --color-hw-text-primary: #262e38;
+  --color-hw-grey-2: #8b8b8b;
+  --color-hw-btn-hover: #e4e4e4;
+
+  /* Typography */
+  --font-numeric: "Inter", "Pretendard", sans-serif;
+  /* Hanwha 일반체(@font-face는 base.css). 유틸리티: font-hanwha */
+  --font-hanwha: "Hanwha", "HanwhaGothic", sans-serif;
+
+  /* Motion */
+  --ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* ============================================================
+     Unit system — Tailwind 기본 스케일을 rem → px 로 재정의한다.
+     (root 16px 기준이라 시각적 결과는 동일하고 출력 단위만 px 가 된다)
+     - --spacing      : padding/margin/gap/width/height 등 간격 스케일
+     - --text-*       : 폰트 사이즈 스케일 (line-height 비율값은 그대로 유지)
+     - --radius-*     : 모서리 반경 스케일 (sm/md/lg/xl 은 아래 @theme inline 에서 --radius 기반)
+     - --breakpoint-* : 반응형 분기점
+     - --container-*  : 컨테이너 폭 스케일
+     ============================================================ */
+  --spacing: 4px;
+
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-base: 16px;
+  --text-lg: 18px;
+  --text-xl: 20px;
+  --text-2xl: 24px;
+  --text-3xl: 30px;
+  --text-4xl: 36px;
+  --text-5xl: 48px;
+  --text-6xl: 60px;
+  --text-7xl: 72px;
+  --text-8xl: 96px;
+  --text-9xl: 128px;
+
+  /* ============================================================
+     Semantic typography — Figma(node 5129-13637, "01. Typography")에서
+     추출. 각 토큰이 size + line-height + letter-spacing + weight 를 묶는다.
+     font-family 는 전역 HanwhaGothic(base.css @font-face). 위 numeric
+     text-* 스케일과 공존한다.
+     사용 예: text-h1, text-b2, text-c1
+     ============================================================ */
+  /* Heading */
+  --text-h1: 40px;
+  --text-h1--line-height: 56px;
+  --text-h1--letter-spacing: -0.6px;
+  --text-h1--font-weight: 400;
+  --text-h2: 32px;
+  --text-h2--line-height: 48px;
+  --text-h2--letter-spacing: -0.6px;
+  --text-h2--font-weight: 400;
+  --text-h3: 24px;
+  --text-h3--line-height: 32px;
+  --text-h3--letter-spacing: -0.6px;
+  --text-h3--font-weight: 400;
+  --text-h4: 20px;
+  --text-h4--line-height: 30px;
+  --text-h4--letter-spacing: -0.2px;
+  --text-h4--font-weight: 400;
+  --text-h5: 18px;
+  --text-h5--line-height: 24px;
+  --text-h5--letter-spacing: -0.2px;
+  --text-h5--font-weight: 400;
+  --text-h6: 16px;
+  --text-h6--line-height: 24px;
+  --text-h6--letter-spacing: -0.2px;
+  --text-h6--font-weight: 400;
+
+  /* Subtitle */
+  --text-s1: 20px;
+  --text-s1--line-height: 30px;
+  --text-s1--letter-spacing: -0.2px;
+  --text-s1--font-weight: 300;
+  --text-s2: 14px;
+  --text-s2--line-height: 20px;
+  --text-s2--letter-spacing: 0;
+  --text-s2--font-weight: 400;
+  --text-s3: 12px;
+  --text-s3--line-height: 18px;
+  --text-s3--letter-spacing: 0;
+  --text-s3--font-weight: 400;
+
+  /* Body */
+  --text-b1: 18px;
+  --text-b1--line-height: 24px;
+  --text-b1--letter-spacing: -0.2px;
+  --text-b1--font-weight: 300;
+  --text-b2: 16px;
+  --text-b2--line-height: 22px;
+  --text-b2--letter-spacing: -0.2px;
+  --text-b2--font-weight: 300;
+  --text-b3: 14px;
+  --text-b3--line-height: 20px;
+  --text-b3--letter-spacing: 0;
+  --text-b3--font-weight: 250;
+
+  /* Caption */
+  --text-c1: 12px;
+  --text-c1--line-height: 16px;
+  --text-c1--letter-spacing: 0;
+  --text-c1--font-weight: 300;
+  --text-c2: 10px;
+  --text-c2--line-height: 14px;
+  --text-c2--letter-spacing: 0;
+  --text-c2--font-weight: 300;
+
+  --radius-xs: 2px;
+  --radius-2xl: 16px;
+  --radius-3xl: 24px;
+  --radius-4xl: 32px;
+
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
+
+  --container-3xs: 256px;
+  --container-2xs: 288px;
+  --container-xs: 320px;
+  --container-sm: 384px;
+  --container-md: 448px;
+  --container-lg: 512px;
+  --container-xl: 576px;
+  --container-2xl: 672px;
+  --container-3xl: 768px;
+  --container-4xl: 896px;
+  --container-5xl: 1024px;
+  --container-6xl: 1152px;
+  --container-7xl: 1280px;
+}
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+:root {
+  --radius: 10px;
+}
