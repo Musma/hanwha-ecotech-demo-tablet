@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { shallowRef } from 'vue'
 
+import { useTabletClock } from '@/features/logged/dashboard/composables/use-tablet-clock'
 import LoginView from '@/features/public/components/login-view.vue'
 
 const unlocked = shallowRef(false)
+const { currentDate, currentTime } = useTabletClock()
 
 function unlockTablet() {
   unlocked.value = true
@@ -34,7 +36,7 @@ function unlockTablet() {
           </span>
           <span class="flex-shrink-0">
             <i class="ti ti-wifi mr-1" aria-hidden="true" />
-            09:32
+            {{ currentTime }}
           </span>
         </div>
 
@@ -59,9 +61,9 @@ function unlockTablet() {
               />
 
               <div class="relative mt-[16%] sm:mt-[10%]">
-                <p class="text-h3 font-light sm:text-h1">09:32</p>
+                <p class="text-h3 font-light sm:text-h1">{{ currentTime }}</p>
                 <p class="mt-1 text-c1 text-hw-white-dark">
-                  2026. 07. 10. (금)
+                  {{ currentDate }}
                 </p>
               </div>
 
