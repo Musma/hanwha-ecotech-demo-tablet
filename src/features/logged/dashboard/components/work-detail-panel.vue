@@ -21,20 +21,18 @@ const detail = computed(() => ({
 
 <template>
   <section
-    class="flex h-full min-h-0 flex-col px-2 pt-2 [@media(min-height:800px)]:pt-4"
+    class="flex h-full min-h-0 flex-col px-2 pt-2"
     aria-label="작업 상세"
   >
     <div
-      class="flex h-12 flex-shrink-0 items-center justify-center rounded-md border border-hw-green-lighter bg-hw-green-lighter/55 text-h4 font-bold text-hw-green-dark [@media(min-height:800px)]:h-16 [@media(min-height:800px)]:text-h3"
+      class="flex h-12 flex-shrink-0 items-center justify-center rounded-md border border-hw-green-lighter bg-hw-green-lighter/55 text-h5 font-bold text-hw-green-dark"
     >
       작업 대기
     </div>
 
-    <div
-      class="mt-4 min-h-0 flex-1 overflow-hidden [@media(min-height:800px)]:mt-8 [@media(min-height:800px)]:h-[422px] [@media(min-height:800px)]:flex-none"
-    >
+    <div class="mt-4 min-h-0 max-h-80 flex-1 overflow-hidden">
       <table
-        class="h-full w-full table-fixed border-collapse text-b2 text-hw-gray-dark [@media(min-height:800px)]:text-h4"
+        class="h-full w-full table-fixed border-collapse text-b2 text-hw-gray-dark"
       >
         <colgroup>
           <col class="w-[28%]" />
@@ -149,19 +147,17 @@ const detail = computed(() => ({
       </table>
     </div>
 
-    <div
-      class="-mr-2 ml-2 mt-auto grid flex-shrink-0 grid-cols-2 gap-8 pt-4 [@media(min-height:800px)]:pt-6"
-    >
+    <div class="mt-auto grid flex-shrink-0 grid-cols-2 gap-6 pt-4">
       <button
         type="button"
-        class="h-16 rounded-lg bg-hw-orange-main text-h4 font-bold text-hw-white-main transition-colors hover:bg-hw-orange-dark [@media(min-height:800px)]:h-20 [@media(min-height:800px)]:text-h3"
+        class="h-16 rounded-md bg-hw-orange-main text-h5 font-bold text-hw-white-main transition-colors hover:bg-hw-orange-dark"
       >
         작업 시작
       </button>
       <button
         type="button"
         disabled
-        class="h-16 cursor-not-allowed rounded-lg bg-hw-white-dark text-h4 font-bold text-hw-gray-light [@media(min-height:800px)]:h-20 [@media(min-height:800px)]:text-h3"
+        class="h-16 cursor-not-allowed rounded-md bg-hw-white-dark text-h5 font-bold text-hw-gray-light"
       >
         작업 종료
       </button>
