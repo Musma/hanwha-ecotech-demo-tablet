@@ -9,6 +9,8 @@ import { computed, onMounted, onUnmounted, shallowRef, watch } from 'vue'
 
 import 'maplibre-gl/dist/maplibre-gl.css'
 
+import yard1ImageUrl from '@/shared/assets/map/yard1.png'
+import yard2ImageUrl from '@/shared/assets/map/yard2.png'
 import { getMapLibreStyle } from '@/shared/constants/map'
 import { DEFAULT_GRID_SIZE_METERS } from '@/shared/constants/map-common'
 import {
@@ -89,7 +91,7 @@ const YARD_CAD_IMAGE_OVERLAYS = [
     sourceId: 'yard-cad-image-2yard',
     layerId: 'yard-cad-image-2yard',
     label: '2YARD',
-    url: '/yard2.png',
+    url: yard2ImageUrl,
     coordinates: [
       [127.587585, 34.899842],
       [127.590244, 34.901574],
@@ -101,7 +103,7 @@ const YARD_CAD_IMAGE_OVERLAYS = [
     sourceId: 'yard-cad-image-1yard',
     layerId: 'yard-cad-image-1yard',
     label: '1YARD',
-    url: '/yard1.png',
+    url: yard1ImageUrl,
     coordinates: [
       [127.590772, 34.901531],
       [127.601043, 34.90818],
