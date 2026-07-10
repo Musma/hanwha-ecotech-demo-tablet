@@ -131,7 +131,7 @@ function addVehicleMarker(map: MapLibreMap) {
 
   const element = document.createElement('div')
   element.className = 'dashboard-map-marker dashboard-map-marker--vehicle'
-  element.title = '175바 1255'
+  element.title = '차량'
 
   const waves = Array.from({ length: 3 }, () => {
     const wave = document.createElement('span')
@@ -146,7 +146,6 @@ function addVehicleMarker(map: MapLibreMap) {
   icon.className = 'ti ti-truck'
   icon.setAttribute('aria-hidden', 'true')
   tag.append(icon)
-  tag.append('175바 1255')
   element.append(tag)
 
   vehicleMarkerRef.value = new maplibregl.Marker({
