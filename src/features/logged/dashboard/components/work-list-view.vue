@@ -2,7 +2,6 @@
 import { shallowRef } from 'vue'
 import { useRouter } from 'vue-router'
 
-import WorkDetailMap from '@/features/logged/dashboard/components/work-detail-map.vue'
 import WorkDetailPanel from '@/features/logged/dashboard/components/work-detail-panel.vue'
 import WorkListHeader from '@/features/logged/dashboard/components/work-list-header.vue'
 import WorkListMap from '@/features/logged/dashboard/components/work-list-map.vue'
@@ -64,18 +63,14 @@ function selectTask(task: WorkItem) {
       <main
         class="grid min-h-0 flex-1 grid-cols-1 gap-6 bg-hw-white-main p-6 md:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]"
       >
-        <template v-if="selectedTask">
-          <WorkDetailPanel :task="selectedTask" />
-          <WorkDetailMap :task="selectedTask" />
-        </template>
-        <template v-else>
-          <WorkListPanel
-            v-model:active-tab="activeTab"
-            :tasks="WORK_ITEMS"
-            @select-task="selectTask"
-          />
-          <WorkListMap />
-        </template>
+        <WorkDetailPanel v-if="selectedTask" :task="selectedTask" />
+        <WorkListPanel
+          v-else
+          v-model:active-tab="activeTab"
+          :tasks="WORK_ITEMS"
+          @select-task="selectTask"
+        />
+        <WorkListMap />
       </main>
     </div>
   </div>
