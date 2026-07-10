@@ -33,7 +33,7 @@ function unlockTablet() {
         >
           <span class="min-w-0 truncate">
             <i class="ti ti-device-tablet mr-1" aria-hidden="true" />
-            에코텍 현장 태블릿 PC
+            에코텍 물류 · 현장 태블릿 PC
           </span>
           <span class="flex-shrink-0">
             <i class="ti ti-wifi mr-1" aria-hidden="true" />
