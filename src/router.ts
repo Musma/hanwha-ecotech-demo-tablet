@@ -10,7 +10,7 @@ const routes: RouteRecordRaw[] = [
     path: '/dashboard',
     name: 'dashboard',
     component: () => import('@/pages/dashboard/index.vue'),
-    meta: { hideSidebar: true },
+    meta: { layout: 'blank' },
   },
   {
     path: '/login',

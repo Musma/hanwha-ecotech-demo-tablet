@@ -47,24 +47,18 @@ export function createVWorldTileStyle(
   const safeApiKey = encodeURIComponent(String(RAW_VWORLD_API_KEY ?? '').trim())
   if (!safeApiKey) return OSM_RASTER_TILE_STYLE
 
+  const sourceId = `vworld-${mode}`
+  const tileName = mode === 'base' ? 'Base' : 'Satellite'
+  const extension = mode === 'base' ? 'png' : 'jpeg'
+
   return {
     version: 8,
     glyphs: MAPLIBRE_GLYPHS_URL,
     sources: {
-      'vworld-base': {
+      [sourceId]: {
         type: 'raster',
         tiles: [
-          `https://api.vworld.kr/req/wmts/1.0.0/${safeApiKey}/Base/{z}/{y}/{x}.png`,
-        ],
-        tileSize: 256,
-        minzoom: 6,
-        maxzoom: 19,
-        attribution: 'VWorld',
-      },
-      'vworld-satellite': {
-        type: 'raster',
-        tiles: [
-          `https://api.vworld.kr/req/wmts/1.0.0/${safeApiKey}/Satellite/{z}/{y}/{x}.jpeg`,
+          `https://api.vworld.kr/req/wmts/1.0.0/${safeApiKey}/${tileName}/{z}/{y}/{x}.${extension}`,
         ],
         tileSize: 256,
         minzoom: 6,
@@ -74,20 +68,9 @@ export function createVWorldTileStyle(
     },
     layers: [
       {
-        id: 'vworld-base',
+        id: sourceId,
         type: 'raster',
-        source: 'vworld-base',
-        layout: {
-          visibility: mode === 'base' ? 'visible' : 'none',
-        },
-      },
-      {
-        id: 'vworld-satellite',
-        type: 'raster',
-        source: 'vworld-satellite',
-        layout: {
-          visibility: mode === 'base' ? 'none' : 'visible',
-        },
+        source: sourceId,
       },
     ],
   }

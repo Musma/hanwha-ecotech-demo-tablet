@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import TabletDemoView from '@/features/logged/dashboard/components/tablet-demo-view.vue'
+import WorkListView from '@/features/logged/dashboard/components/work-list-view.vue'
 </script>
 
 <template>
-  <TabletDemoView />
+  <WorkListView />
 </template>

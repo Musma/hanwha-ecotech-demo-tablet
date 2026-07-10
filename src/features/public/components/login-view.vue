@@ -11,6 +11,9 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   embedded: false,
 })
+const emit = defineEmits<{
+  success: []
+}>()
 </script>
 
 <template>
@@ -43,6 +46,7 @@ const props = withDefaults(defineProps<Props>(), {
         <LoginForm
           :embedded="props.embedded"
           :class="props.embedded ? 'mt-auto' : 'mt-3'"
+          @success="emit('success')"
         />
 
         <LoginInfoFooter :embedded="props.embedded" class="mt-auto" />

@@ -11,6 +11,9 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   embedded: false,
 })
+const emit = defineEmits<{
+  success: []
+}>()
 
 const {
   username,
@@ -20,6 +23,11 @@ const {
   togglePasswordVisible,
   submit,
 } = useLoginForm()
+
+async function handleSubmit() {
+  const success = await submit()
+  if (success) emit('success')
+}
 </script>
 
 <template>
@@ -36,7 +44,7 @@ const {
     <form
       class="flex flex-col"
       :class="props.embedded ? 'gap-3' : 'gap-5'"
-      @submit.prevent="submit"
+      @submit.prevent="handleSubmit"
     >
       <label
         class="flex flex-col"
