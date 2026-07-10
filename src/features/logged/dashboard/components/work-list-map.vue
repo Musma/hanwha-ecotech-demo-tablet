@@ -10,6 +10,7 @@ import 'maplibre-gl/dist/maplibre-gl.css'
 import { JIBUN_SEED } from '@/features/logged/jibun/constants/jibun-data'
 import { getMapLibreStyle } from '@/shared/constants/map'
 import {
+  YARD_DEFAULT_BEARING,
   YARD_DEFAULT_CENTER,
   YARD_GRID_BOUNDARY_COORDINATES,
   YARD_JIBUN_KIND_COLORS,
@@ -77,9 +78,12 @@ function initializeMap() {
     container: mapRootRef.value,
     style: getMapLibreStyle('vworld-base'),
     bounds: MAP_BOUNDS,
-    fitBoundsOptions: { padding: 24 },
+    fitBoundsOptions: {
+      bearing: YARD_DEFAULT_BEARING,
+      padding: 24,
+    },
     pitch: 0,
-    bearing: 0,
+    bearing: YARD_DEFAULT_BEARING,
     dragRotate: false,
     touchZoomRotate: false,
     renderWorldCopies: false,
@@ -88,6 +92,11 @@ function initializeMap() {
 
   mapRef.value = map
   map.once('load', () => {
+    map.jumpTo({
+      bearing: YARD_DEFAULT_BEARING,
+      pitch: 0,
+      zoom: map.getZoom(),
+    })
     map.addSource(PARCEL_SOURCE_ID, {
       type: 'geojson',
       data: createParcelFeatureCollection(),
