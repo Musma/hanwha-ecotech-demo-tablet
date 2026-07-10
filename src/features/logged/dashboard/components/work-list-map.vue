@@ -32,6 +32,7 @@ interface ParcelFeatureGroup {
   sourceId: string
 }
 
+const MAP_ZOOM_OFFSET = 1
 const YARD_LONGITUDES = YARD_GRID_BOUNDARY_COORDINATES.map(([lng]) => lng)
 const YARD_LATITUDES = YARD_GRID_BOUNDARY_COORDINATES.map(([, lat]) => lat)
 const MAP_BOUNDS: LngLatBoundsLike = [
@@ -135,7 +136,7 @@ function initializeMap() {
     map.jumpTo({
       bearing: YARD_DEFAULT_BEARING,
       pitch: 0,
-      zoom: map.getZoom(),
+      zoom: map.getZoom() + MAP_ZOOM_OFFSET,
     })
 
     createParcelFeatureGroups().forEach((group) => {
