@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { shallowRef } from 'vue'
 
+import TabletUnlockSlider from '@/features/logged/dashboard/components/tablet-unlock-slider.vue'
 import { useTabletClock } from '@/features/logged/dashboard/composables/use-tablet-clock'
 import LoginView from '@/features/public/components/login-view.vue'
 
@@ -67,14 +68,10 @@ function unlockTablet() {
                 </p>
               </div>
 
-              <button
-                type="button"
-                class="relative mt-auto mb-4 rounded-full bg-hw-orange-main px-8 py-3 text-s2 font-bold text-hw-white-main shadow-lg transition-colors hover:bg-hw-orange-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hw-white-main disabled:cursor-not-allowed disabled:opacity-50 motion-reduce:transition-none sm:mb-8"
-                @click="unlockTablet"
-              >
-                <i class="ti ti-lock mr-1" aria-hidden="true" />
-                밀어서 해제
-              </button>
+              <TabletUnlockSlider
+                class="relative mt-auto mb-4 sm:mb-8"
+                @unlock="unlockTablet"
+              />
             </div>
 
             <div v-else key="login" class="h-full bg-hw-white-main">
