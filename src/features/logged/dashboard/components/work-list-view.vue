@@ -2,11 +2,16 @@
 import { shallowRef } from 'vue'
 import { useRouter } from 'vue-router'
 
+import WorkDetailMap from '@/features/logged/dashboard/components/work-detail-map.vue'
+import WorkDetailPanel from '@/features/logged/dashboard/components/work-detail-panel.vue'
 import WorkListHeader from '@/features/logged/dashboard/components/work-list-header.vue'
 import WorkListMap from '@/features/logged/dashboard/components/work-list-map.vue'
 import WorkListPanel from '@/features/logged/dashboard/components/work-list-panel.vue'
 import { WORK_ITEMS } from '@/features/logged/dashboard/constants/work-list'
-import type { WorkListTab } from '@/features/logged/dashboard/types/work-list'
+import type {
+  WorkItem,
+  WorkListTab,
+} from '@/features/logged/dashboard/types/work-list'
 
 interface Props {
   embedded?: boolean
@@ -21,6 +26,7 @@ const emit = defineEmits<{
 
 const router = useRouter()
 const activeTab = shallowRef<WorkListTab>('pending')
+const selectedTask = shallowRef<WorkItem | null>(null)
 
 function logout() {
   if (props.embedded) {
@@ -28,6 +34,11 @@ function logout() {
     return
   }
   void router.push('/login')
+}
+
+function selectTask(task: WorkItem) {
+  if (task.status !== 'pending') return
+  selectedTask.value = task
 }
 </script>
 
@@ -53,8 +64,18 @@ function logout() {
       <main
         class="grid min-h-0 flex-1 grid-cols-1 gap-6 bg-hw-white-main p-6 md:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]"
       >
-        <WorkListPanel v-model:active-tab="activeTab" :tasks="WORK_ITEMS" />
-        <WorkListMap />
+        <template v-if="selectedTask">
+          <WorkDetailPanel :task="selectedTask" />
+          <WorkDetailMap :task="selectedTask" />
+        </template>
+        <template v-else>
+          <WorkListPanel
+            v-model:active-tab="activeTab"
+            :tasks="WORK_ITEMS"
+            @select-task="selectTask"
+          />
+          <WorkListMap />
+        </template>
       </main>
     </div>
   </div>

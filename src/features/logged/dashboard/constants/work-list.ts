@@ -18,6 +18,13 @@ export const WORK_ITEMS: WorkItem[] = [
     objectName: '함수',
     departureCode: 'AA1001',
     departureName: '의장재 공장',
+    detail: {
+      weightTons: 10,
+      dimensions: '10*20*10',
+      startedAt: '2026/05/20',
+      completedAt: '2026/05/20',
+      description: '블록 불출작업을 위한 주변 블록 이동 작업',
+    },
   },
   {
     id: 15600,

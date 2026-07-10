@@ -12,6 +12,9 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+const emit = defineEmits<{
+  selectTask: [task: WorkItem]
+}>()
 const activeTab = defineModel<WorkListTab>('activeTab', {
   default: 'pending',
 })
@@ -49,56 +52,60 @@ function statusLabel(status: WorkItem['status']) {
 
     <div class="mt-7 min-h-0 flex-1 overflow-y-auto px-1.5 pb-2">
       <ul class="m-0 flex list-none flex-col gap-3.5 p-0">
-        <li
-          v-for="task in visibleTasks"
-          :key="task.id"
-          class="rounded-sm border border-hw-gray-lighter bg-hw-white-main px-5 py-4"
-        >
-          <div class="grid grid-cols-[68px_minmax(0,1fr)] gap-x-3 gap-y-2">
-            <div class="flex flex-col items-center gap-2">
-              <span
-                class="inline-flex h-6 items-center rounded-sm px-3 text-c2 font-bold"
-                :class="
-                  task.status === 'pending'
-                    ? 'bg-hw-green-lighter text-hw-green-dark'
-                    : 'bg-hw-white-darker text-hw-gray-dark'
-                "
-              >
-                {{ statusLabel(task.status) }}
-              </span>
-              <strong class="text-b2 font-normal text-hw-gray-darker">
-                {{ task.id }}
-              </strong>
-            </div>
-
-            <div class="min-w-0">
-              <p
-                class="m-0 flex flex-wrap items-center gap-x-3 gap-y-1 text-b2 text-hw-gray-dark"
-              >
-                <strong class="font-bold">{{ task.category }}</strong>
-                <button
-                  type="button"
-                  class="font-bold text-hw-blue-main hover:underline"
+        <li v-for="task in visibleTasks" :key="task.id">
+          <button
+            type="button"
+            class="w-full rounded-sm border border-hw-gray-lighter bg-hw-white-main px-5 py-4 text-left transition-colors"
+            :class="
+              task.status === 'pending'
+                ? 'cursor-pointer hover:border-hw-orange-main focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hw-orange-main'
+                : 'cursor-default'
+            "
+            :disabled="task.status !== 'pending'"
+            @click="emit('selectTask', task)"
+          >
+            <div class="grid grid-cols-[68px_minmax(0,1fr)] gap-x-3 gap-y-2">
+              <div class="flex flex-col items-center gap-2">
+                <span
+                  class="inline-flex h-6 items-center rounded-sm px-3 text-c2 font-bold"
+                  :class="
+                    task.status === 'pending'
+                      ? 'bg-hw-green-lighter text-hw-green-dark'
+                      : 'bg-hw-white-darker text-hw-gray-dark'
+                  "
                 >
-                  {{ task.objectCode }}
-                </button>
-                <span>{{ task.objectName }}</span>
-              </p>
+                  {{ statusLabel(task.status) }}
+                </span>
+                <strong class="text-b2 font-normal text-hw-gray-darker">
+                  {{ task.id }}
+                </strong>
+              </div>
 
-              <p
-                class="mt-2 mb-0 flex flex-wrap items-center gap-x-1 text-s2 text-hw-gray-dark"
-              >
-                <span>출발지 :</span>
-                <button
-                  type="button"
-                  class="font-bold text-hw-orange-main underline underline-offset-2"
+              <div class="min-w-0">
+                <p
+                  class="m-0 flex flex-wrap items-center gap-x-3 gap-y-1 text-b2 text-hw-gray-dark"
                 >
-                  {{ task.departureCode }}
-                </button>
-                <span>{{ task.departureName }}</span>
-              </p>
+                  <strong class="font-bold">{{ task.category }}</strong>
+                  <span class="font-bold text-hw-blue-main">
+                    {{ task.objectCode }}
+                  </span>
+                  <span>{{ task.objectName }}</span>
+                </p>
+
+                <p
+                  class="mt-2 mb-0 flex flex-wrap items-center gap-x-1 text-s2 text-hw-gray-dark"
+                >
+                  <span>출발지 :</span>
+                  <span
+                    class="font-bold text-hw-orange-main underline underline-offset-2"
+                  >
+                    {{ task.departureCode }}
+                  </span>
+                  <span>{{ task.departureName }}</span>
+                </p>
+              </div>
             </div>
-          </div>
+          </button>
         </li>
       </ul>
 
