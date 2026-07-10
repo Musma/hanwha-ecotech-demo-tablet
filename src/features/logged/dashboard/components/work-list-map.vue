@@ -9,7 +9,6 @@ import { onMounted, onUnmounted, shallowRef, useTemplateRef } from 'vue'
 import 'maplibre-gl/dist/maplibre-gl.css'
 
 import { JIBUN_SEED } from '@/features/logged/jibun/constants/jibun-data'
-import { formatStartPhysicalJibun } from '@/features/logged/jibun/utils/jibun-utils'
 import { getMapLibreStyle } from '@/shared/constants/map'
 import {
   YARD_DEFAULT_BEARING,
@@ -33,14 +32,6 @@ interface ParcelFeatureGroup {
   sourceId: string
 }
 
-interface ParcelLabelMarker {
-  element: HTMLDivElement
-  level: number
-  marker: Marker
-}
-
-const LABEL_COLLISION_HEIGHT = 28
-const LABEL_COLLISION_WIDTH = 72
 const YARD_LONGITUDES = YARD_GRID_BOUNDARY_COORDINATES.map(([lng]) => lng)
 const YARD_LATITUDES = YARD_GRID_BOUNDARY_COORDINATES.map(([, lat]) => lat)
 const MAP_BOUNDS: LngLatBoundsLike = [
@@ -51,17 +42,13 @@ const MAP_BOUNDS: LngLatBoundsLike = [
 const mapRootRef = useTemplateRef<HTMLDivElement>('mapRoot')
 const mapRef = shallowRef<MapLibreMap | null>(null)
 const mapReady = shallowRef(false)
-const labelMarkerRefs = shallowRef<ParcelLabelMarker[]>([])
+const labelMarkerRefs = shallowRef<Marker[]>([])
 const resizeObserverRef = shallowRef<ResizeObserver | null>(null)
 
 const parcelPolygons = createYardJibunPolygons(JIBUN_SEED, {
   lat: YARD_DEFAULT_CENTER[1],
   lng: YARD_DEFAULT_CENTER[0],
 })
-const jibunByPolygonId = new Map(
-  JIBUN_SEED.map((jibun) => [`jibun-${jibun.id}`, jibun]),
-)
-
 function createParcelFeatureGroups(): ParcelFeatureGroup[] {
   const coordinatesByFill = new Map<string, MultiPolygon['coordinates']>()
 
@@ -92,42 +79,15 @@ function createParcelFeatureGroups(): ParcelFeatureGroup[] {
 }
 
 function clearParcelLabelMarkers() {
-  labelMarkerRefs.value.forEach(({ marker }) => marker.remove())
+  labelMarkerRefs.value.forEach((marker) => marker.remove())
   labelMarkerRefs.value = []
-}
-
-function updateParcelLabelVisibility(map: MapLibreMap) {
-  const canvas = map.getCanvas()
-  const occupiedPoints: Array<{ x: number; y: number }> = []
-
-  labelMarkerRefs.value
-    .slice()
-    .sort((left, right) => left.level - right.level)
-    .forEach(({ element, marker }) => {
-      const point = map.project(marker.getLngLat())
-      const isOutside =
-        point.x < 0 ||
-        point.y < 0 ||
-        point.x > canvas.clientWidth ||
-        point.y > canvas.clientHeight
-      const overlaps = occupiedPoints.some(
-        (occupied) =>
-          Math.abs(occupied.x - point.x) < LABEL_COLLISION_WIDTH &&
-          Math.abs(occupied.y - point.y) < LABEL_COLLISION_HEIGHT,
-      )
-
-      element.hidden = isOutside || overlaps
-      if (!element.hidden) occupiedPoints.push(point)
-    })
 }
 
 function addParcelLabelMarkers(map: MapLibreMap) {
   clearParcelLabelMarkers()
   labelMarkerRefs.value = parcelPolygons
     .map((polygon) => {
-      const jibun = jibunByPolygonId.get(polygon.id)
-      const address = formatStartPhysicalJibun(jibun)
-      if (!polygon.name || polygon.points.length === 0 || !address) return null
+      if (!polygon.name || polygon.points.length === 0) return null
 
       const centroid = polygon.points.reduce(
         (acc, point) => ({
@@ -138,29 +98,17 @@ function addParcelLabelMarkers(map: MapLibreMap) {
       )
       const element = document.createElement('div')
       element.className =
-        'pointer-events-none flex flex-col items-center rounded-sm bg-hw-gray-darker/80 px-1.5 py-0.5 text-center leading-tight text-hw-white-main shadow-sm'
+        'rounded-sm bg-hw-gray-darker/75 px-1.5 py-0.5 text-c1 font-bold text-hw-white-main shadow-sm'
+      element.textContent = polygon.name
 
-      const name = document.createElement('strong')
-      name.className = 'text-c1 font-bold'
-      name.textContent = polygon.name
-
-      const physicalAddress = document.createElement('span')
-      physicalAddress.className = 'whitespace-nowrap text-[9px] font-normal'
-      physicalAddress.textContent = address
-      element.append(name, physicalAddress)
-
-      const marker = new maplibregl.Marker({ element, anchor: 'center' })
+      return new maplibregl.Marker({ element, anchor: 'center' })
         .setLngLat([
           centroid.lng / polygon.points.length,
           centroid.lat / polygon.points.length,
         ])
         .addTo(map)
-
-      return { element, level: jibun?.level ?? 4, marker }
     })
-    .filter((entry): entry is ParcelLabelMarker => Boolean(entry))
-
-  updateParcelLabelVisibility(map)
+    .filter((marker): marker is Marker => Boolean(marker))
 }
 
 function initializeMap() {
@@ -198,7 +146,7 @@ function initializeMap() {
         source: group.sourceId,
         paint: {
           'fill-color': group.fill,
-          'fill-opacity': 0.18,
+          'fill-opacity': 0.22,
         },
       })
       map.addLayer({
@@ -214,17 +162,12 @@ function initializeMap() {
     })
 
     addParcelLabelMarkers(map)
-    map.on('move', () => updateParcelLabelVisibility(map))
     map.once('idle', () => {
-      updateParcelLabelVisibility(map)
       mapReady.value = true
     })
   })
 
-  resizeObserverRef.value = new ResizeObserver(() => {
-    map.resize()
-    updateParcelLabelVisibility(map)
-  })
+  resizeObserverRef.value = new ResizeObserver(() => map.resize())
   resizeObserverRef.value.observe(mapRootRef.value)
 }
 
