@@ -16,7 +16,6 @@ interface WorkMapExecutionOptions {
   departureCode: () => string
   destinationCode: () => string
   executionPhase: () => WorkExecutionPhase
-  objectCode: () => string
 }
 
 interface MapExecutionContext {
@@ -38,18 +37,12 @@ const EMPTY_ROUTE_DATA: FeatureCollection<LineString> = {
 export function useWorkMapExecution(options: WorkMapExecutionOptions) {
   let context: MapExecutionContext | null = null
   let animationFrameId: number | null = null
-  let taskMarker: Marker | null = null
   let routeEndpointMarkers: Marker[] = []
 
   function cancelMovement() {
     if (animationFrameId === null) return
     cancelAnimationFrame(animationFrameId)
     animationFrameId = null
-  }
-
-  function clearTaskMarker() {
-    taskMarker?.remove()
-    taskMarker = null
   }
 
   function clearRouteEndpointMarkers() {
@@ -65,9 +58,18 @@ export function useWorkMapExecution(options: WorkMapExecutionOptions) {
     source?.setData(data)
   }
 
-  function clearRoute() {
-    setRouteData(EMPTY_ROUTE_DATA)
+  function removeRouteLayers() {
+    if (!context) return
     clearRouteEndpointMarkers()
+    if (context.map.getLayer(ROUTE_LINE_LAYER_ID)) {
+      context.map.removeLayer(ROUTE_LINE_LAYER_ID)
+    }
+    if (context.map.getLayer(ROUTE_CASING_LAYER_ID)) {
+      context.map.removeLayer(ROUTE_CASING_LAYER_ID)
+    }
+    if (context.map.getSource(ROUTE_SOURCE_ID)) {
+      context.map.removeSource(ROUTE_SOURCE_ID)
+    }
   }
 
   function ensureRouteLayers(map: MapLibreMap) {
@@ -107,34 +109,6 @@ export function useWorkMapExecution(options: WorkMapExecutionOptions) {
     })
   }
 
-  function createPickupMarker() {
-    clearTaskMarker()
-    if (!context || !options.departureCode() || !options.objectCode()) return
-
-    const element = document.createElement('div')
-    element.className =
-      'pointer-events-none flex h-28 w-24 flex-col items-center justify-end rounded-xs bg-hw-blue-lighter/70 pb-3 text-b2 font-bold text-hw-gray-darker shadow-sm'
-    element.style.zIndex = '1'
-
-    const departureLabel = document.createElement('span')
-    departureLabel.className = 'mb-auto mt-auto'
-    departureLabel.textContent = options.departureCode()
-
-    const objectLabel = document.createElement('span')
-    objectLabel.className =
-      'rounded-xs bg-hw-blue-darker px-3 py-1 text-s2 font-bold text-hw-white-main shadow-lg'
-    objectLabel.textContent = options.objectCode()
-    element.append(departureLabel, objectLabel)
-
-    taskMarker = new maplibregl.Marker({
-      element,
-      anchor: 'bottom',
-      offset: [0, 8],
-    })
-      .setLngLat(context.start)
-      .addTo(context.map)
-  }
-
   function createEndpointMarker(
     coordinate: MapCoordinate,
     labelText: string,
@@ -166,6 +140,7 @@ export function useWorkMapExecution(options: WorkMapExecutionOptions) {
   function drawCompletedRoute() {
     if (!context) return
 
+    ensureRouteLayers(context.map)
     const routeFeature: Feature<LineString> = {
       type: 'Feature',
       properties: {},
@@ -242,15 +217,13 @@ export function useWorkMapExecution(options: WorkMapExecutionOptions) {
     const phase = options.executionPhase()
     if (phase === 'waiting') {
       cancelMovement()
-      clearRoute()
+      removeRouteLayers()
       context.vehicleMarker.setLngLat(context.start)
-      createPickupMarker()
       return
     }
 
-    clearTaskMarker()
     if (phase === 'inProgress') {
-      clearRoute()
+      removeRouteLayers()
       context.vehicleMarker.setLngLat(context.start)
       animateVehicle()
       return
@@ -263,23 +236,16 @@ export function useWorkMapExecution(options: WorkMapExecutionOptions) {
 
   function attachMapExecution(nextContext: MapExecutionContext) {
     context = nextContext
-    ensureRouteLayers(context.map)
     syncExecution()
   }
 
   watch(
-    [
-      options.executionPhase,
-      options.departureCode,
-      options.destinationCode,
-      options.objectCode,
-    ],
+    [options.executionPhase, options.departureCode, options.destinationCode],
     syncExecution,
   )
 
   onUnmounted(() => {
     cancelMovement()
-    clearTaskMarker()
     clearRouteEndpointMarkers()
     context = null
   })

@@ -103,7 +103,6 @@ function endWork() {
           :departure-code="selectedTask?.departureCode"
           :destination-code="WORK_TEST_DESTINATION_CODE"
           :execution-phase="phase"
-          :object-code="selectedTask?.objectCode"
         />
       </main>
     </div>

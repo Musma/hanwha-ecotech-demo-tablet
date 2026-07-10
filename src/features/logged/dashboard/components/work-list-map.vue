@@ -26,13 +26,11 @@ interface Props {
   departureCode?: string
   destinationCode: string
   executionPhase: WorkExecutionPhase
-  objectCode?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
   departureCode: '',
   executionPhase: 'waiting',
-  objectCode: '',
 })
 
 interface ParcelFeatureProperties {
@@ -66,7 +64,6 @@ const { attachMapExecution } = useWorkMapExecution({
   departureCode: () => props.departureCode,
   destinationCode: () => props.destinationCode,
   executionPhase: () => props.executionPhase,
-  objectCode: () => props.objectCode,
 })
 
 const parcelPolygons = createYardJibunPolygons(JIBUN_SEED, {
