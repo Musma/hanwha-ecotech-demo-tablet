@@ -44,12 +44,29 @@ const mapRootRef = useTemplateRef<HTMLDivElement>('mapRoot')
 const mapRef = shallowRef<MapLibreMap | null>(null)
 const mapReady = shallowRef(false)
 const labelMarkerRefs = shallowRef<Marker[]>([])
+const vehicleMarkerRef = shallowRef<Marker | null>(null)
 const resizeObserverRef = shallowRef<ResizeObserver | null>(null)
 
 const parcelPolygons = createYardJibunPolygons(JIBUN_SEED, {
   lat: YARD_DEFAULT_CENTER[1],
   lng: YARD_DEFAULT_CENTER[0],
 })
+
+function getPolygonCenter(points: Array<{ lat: number; lng: number }>) {
+  if (points.length === 0) return null
+  const sum = points.reduce(
+    (acc, point) => ({
+      lat: acc.lat + point.lat,
+      lng: acc.lng + point.lng,
+    }),
+    { lat: 0, lng: 0 },
+  )
+  return {
+    lat: sum.lat / points.length,
+    lng: sum.lng / points.length,
+  }
+}
+
 function createParcelFeatureGroups(): ParcelFeatureGroup[] {
   const coordinatesByFill = new Map<string, MultiPolygon['coordinates']>()
 
@@ -90,26 +107,54 @@ function addParcelLabelMarkers(map: MapLibreMap) {
     .map((polygon) => {
       if (!polygon.name || polygon.points.length === 0) return null
 
-      const centroid = polygon.points.reduce(
-        (acc, point) => ({
-          lat: acc.lat + point.lat,
-          lng: acc.lng + point.lng,
-        }),
-        { lat: 0, lng: 0 },
-      )
+      const center = getPolygonCenter(polygon.points)
+      if (!center) return null
       const element = document.createElement('div')
       element.className =
         'rounded-sm bg-hw-gray-darker/75 px-1.5 py-0.5 text-c1 font-bold text-hw-white-main shadow-sm'
       element.textContent = polygon.name
 
       return new maplibregl.Marker({ element, anchor: 'center' })
-        .setLngLat([
-          centroid.lng / polygon.points.length,
-          centroid.lat / polygon.points.length,
-        ])
+        .setLngLat([center.lng, center.lat])
         .addTo(map)
     })
     .filter((marker): marker is Marker => Boolean(marker))
+}
+
+function addVehicleMarker(map: MapLibreMap) {
+  vehicleMarkerRef.value?.remove()
+  vehicleMarkerRef.value = null
+
+  const r1Polygon = parcelPolygons.find((polygon) => polygon.name === 'R1')
+  const center = r1Polygon ? getPolygonCenter(r1Polygon.points) : null
+  if (!center) return
+
+  const element = document.createElement('div')
+  element.className = 'dashboard-map-marker dashboard-map-marker--vehicle'
+  element.title = '175바 1255'
+
+  const waves = Array.from({ length: 3 }, () => {
+    const wave = document.createElement('span')
+    wave.className = 'dashboard-map-marker__wave'
+    return wave
+  })
+  element.append(...waves)
+
+  const tag = document.createElement('span')
+  tag.className = 'dashboard-map-marker__tag'
+  const icon = document.createElement('i')
+  icon.className = 'ti ti-truck'
+  icon.setAttribute('aria-hidden', 'true')
+  tag.append(icon)
+  tag.append('175바 1255')
+  element.append(tag)
+
+  vehicleMarkerRef.value = new maplibregl.Marker({
+    element,
+    anchor: 'bottom',
+  })
+    .setLngLat([center.lng, center.lat])
+    .addTo(map)
 }
 
 function initializeMap() {
@@ -163,6 +208,7 @@ function initializeMap() {
     })
 
     addParcelLabelMarkers(map)
+    addVehicleMarker(map)
     map.once('idle', () => {
       mapReady.value = true
     })
@@ -178,6 +224,8 @@ onUnmounted(() => {
   resizeObserverRef.value?.disconnect()
   resizeObserverRef.value = null
   clearParcelLabelMarkers()
+  vehicleMarkerRef.value?.remove()
+  vehicleMarkerRef.value = null
   mapRef.value?.remove()
   mapRef.value = null
   mapReady.value = false
