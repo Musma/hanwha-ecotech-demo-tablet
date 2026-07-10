@@ -1,9 +1,6 @@
 <script setup lang="ts">
 import { useLoginForm } from '@/features/public/composables/use-login-form'
-import {
-  LOGIN_HEADING,
-  LOGIN_SUBHEADING,
-} from '@/features/public/constants/login'
+import { LOGIN_HEADING } from '@/features/public/constants/login'
 import { Button } from '@/shared/components/ui/button'
 import { Input } from '@/shared/components/ui/input'
 
@@ -27,19 +24,13 @@ const {
 
 <template>
   <section class="flex flex-col" :class="props.embedded ? 'gap-4' : 'gap-7'">
-    <header class="flex flex-col" :class="props.embedded ? 'gap-1' : 'gap-2.5'">
+    <header>
       <h1
         class="m-0 font-bold leading-[1.2] tracking-[-0.6px] text-hw-gray-darker"
         :class="props.embedded ? 'text-h4' : 'text-[28px]'"
       >
         {{ LOGIN_HEADING }}
       </h1>
-      <p
-        class="m-0 font-normal text-hw-gray-main"
-        :class="props.embedded ? 'text-c1' : 'text-[15px] leading-[1.4]'"
-      >
-        {{ LOGIN_SUBHEADING }}
-      </p>
     </header>
 
     <form

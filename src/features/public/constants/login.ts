@@ -4,8 +4,6 @@ export const LOGIN_BRAND_NAME = '한화오션에코텍'
 
 export const LOGIN_HEADING = '로그인'
 
-export const LOGIN_SUBHEADING = '권한이 허용된 이용자만 접속하실 수 있습니다.'
-
 export const LOGIN_CONTACT = {
   guide: '계정 및 승인은 아래 담당자의 이메일로 문의해 주세요',
   org: 'Hanwha Ocean Ecotech',
