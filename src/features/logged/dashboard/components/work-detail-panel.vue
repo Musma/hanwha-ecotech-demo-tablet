@@ -84,9 +84,10 @@ const detail = computed(() => ({
           <tr class="h-[16%]">
             <th
               scope="row"
-              class="whitespace-nowrap border border-hw-gray-lighter bg-hw-white-lighter px-3 text-left font-normal"
+              class="border border-hw-gray-lighter bg-hw-white-lighter px-3 text-left leading-tight font-normal"
             >
-              길이*폭*높이(m)
+              <span class="block whitespace-nowrap">길이*폭*높이</span>
+              <span class="block">(m)</span>
             </th>
             <td class="border border-hw-gray-lighter px-4 font-bold">
               {{ detail.dimensions }}
