@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node '/Users/dave/Documents/hanwha/hanwha-ecotech-demo-tablet/.codex/hooks/check-design-tokens.mjs'"
+          }
+        ]
+      }
+    ]
+  }
+}
