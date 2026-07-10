@@ -33,6 +33,7 @@ interface ParcelFeatureGroup {
 }
 
 const MAP_ZOOM_OFFSET = 1
+const VEHICLE_MARKER_LEFT_OFFSET_PX = 36
 const YARD_LONGITUDES = YARD_GRID_BOUNDARY_COORDINATES.map(([lng]) => lng)
 const YARD_LATITUDES = YARD_GRID_BOUNDARY_COORDINATES.map(([, lat]) => lat)
 const MAP_BOUNDS: LngLatBoundsLike = [
@@ -128,6 +129,11 @@ function addVehicleMarker(map: MapLibreMap) {
   const r1Polygon = parcelPolygons.find((polygon) => polygon.name === 'R1')
   const center = r1Polygon ? getPolygonCenter(r1Polygon.points) : null
   if (!center) return
+  const r1ScreenPoint = map.project(center)
+  const vehiclePosition = map.unproject([
+    r1ScreenPoint.x - VEHICLE_MARKER_LEFT_OFFSET_PX,
+    r1ScreenPoint.y,
+  ])
 
   const element = document.createElement('div')
   element.className = 'dashboard-map-marker dashboard-map-marker--vehicle'
@@ -152,7 +158,7 @@ function addVehicleMarker(map: MapLibreMap) {
     element,
     anchor: 'bottom',
   })
-    .setLngLat([center.lng, center.lat])
+    .setLngLat(vehiclePosition)
     .addTo(map)
 }
 
