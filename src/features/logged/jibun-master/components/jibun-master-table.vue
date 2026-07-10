@@ -327,7 +327,9 @@ function lvPillClass(level: number): string {
     <div
       class="flex flex-col overflow-hidden rounded-sm border border-hw-white-darker bg-white"
     >
-      <div class="flex-1 overflow-auto max-h-[calc(100vh-280px)]">
+      <div
+        class="table-scroll-style flex-1 overflow-auto max-h-[calc(100vh-280px)]"
+      >
         <table
           class="w-full border-collapse bg-white font-normal text-[13px] leading-[1.4]"
         >

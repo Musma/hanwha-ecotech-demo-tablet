@@ -13,7 +13,10 @@ const props = defineProps<Props>()
 </script>
 
 <template>
-  <div data-slot="table-container" class="relative w-full overflow-x-auto">
+  <div
+    data-slot="table-container"
+    class="table-scroll-style relative w-full overflow-x-auto"
+  >
     <table data-slot="table" :class="cn(tableVariants(), props.class)">
       <slot />
     </table>

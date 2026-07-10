@@ -1,0 +1,86 @@
+/* Scrollbar styles aligned with kne-cp-fe. */
+@layer base {
+  * {
+    scrollbar-color: var(--color-hw-gray-light) transparent;
+    scrollbar-width: thin;
+  }
+
+  *::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    width: 6px;
+    height: 6px;
+    background-color: var(--color-hw-gray-light);
+    border-radius: 2px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background-color: transparent;
+  }
+}
+
+@utility main-scroll-style {
+  scrollbar-color: var(--color-hw-gray-light) transparent;
+  scrollbar-width: thin;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    width: 6px;
+    height: 6px;
+    background-color: var(--color-hw-gray-light);
+    border-radius: 2px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background-color: transparent;
+  }
+}
+
+@utility table-scroll-style {
+  scrollbar-color: var(--color-hw-gray-light) transparent;
+  scrollbar-width: thin;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    width: 8px;
+    height: 8px;
+    background-color: var(--color-hw-gray-light);
+    border-radius: 2px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background-color: transparent;
+  }
+}
+
+@utility app-sub-header-scroll {
+  scrollbar-color: var(--color-hw-green-light) transparent;
+  scrollbar-width: thin;
+
+  &::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    width: 3px;
+    height: 3px;
+    background-color: var(--color-hw-green-light);
+    border-radius: 2px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background-color: transparent;
+  }
+}
