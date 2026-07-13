@@ -25,17 +25,14 @@ const emit = defineEmits<{
       </button>
 
       <span class="inline-flex items-center gap-1 whitespace-nowrap">
-        <i
-          class="ti ti-forklift text-xl text-hw-blue-light"
-          aria-hidden="true"
-        />
-        지게차
+        <i class="ti ti-truck text-xl text-hw-blue-light" aria-hidden="true" />
+        T/P
       </span>
 
       <select
         :value="props.vehicleNumber"
         class="h-8 rounded-sm border border-hw-gray-dark bg-hw-white-main px-2 text-s2 font-bold text-hw-gray-dark outline-none"
-        aria-label="지게차 선택"
+        aria-label="T/P 선택"
       >
         <option :value="props.vehicleNumber">
           ㆍ {{ props.vehicleNumber }}
