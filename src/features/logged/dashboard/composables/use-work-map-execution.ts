@@ -34,6 +34,10 @@ const EMPTY_ROUTE_DATA: FeatureCollection<LineString> = {
   features: [],
 }
 
+function getSmoothMovementProgress(progress: number) {
+  return progress * progress * progress * (progress * (progress * 6 - 15) + 10)
+}
+
 export function useWorkMapExecution(options: WorkMapExecutionOptions) {
   let context: MapExecutionContext | null = null
   let animationFrameId: number | null = null
@@ -191,10 +195,7 @@ export function useWorkMapExecution(options: WorkMapExecutionOptions) {
         (now - startedAt) / VEHICLE_MOVEMENT_DURATION_MS,
         1,
       )
-      const easedProgress =
-        progress < 0.5
-          ? 2 * progress * progress
-          : 1 - Math.pow(-2 * progress + 2, 2) / 2
+      const easedProgress = getSmoothMovementProgress(progress)
 
       vehicleMarker.setLngLat([
         start[0] + (destination[0] - start[0]) * easedProgress,

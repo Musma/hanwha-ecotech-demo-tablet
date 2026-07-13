@@ -152,6 +152,7 @@
   height: 28px;
   padding: 0 8px;
   pointer-events: none;
+  will-change: transform;
 }
 
 .dashboard-map-marker__tag {
