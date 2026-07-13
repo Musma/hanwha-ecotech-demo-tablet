@@ -3,9 +3,9 @@ import type {
   WorkTabItem,
 } from '@/features/logged/dashboard/types/work-list'
 
-export const WORK_TEST_DEPARTURE_CODE = 'N1-b4'
+export const WORK_TEST_DEPARTURE_CODE = 'EM-b1'
 
-export const WORK_TEST_DESTINATION_CODE = 'EM-b1'
+export const WORK_TEST_DESTINATION_CODE = 'N1-b4'
 
 export const WORK_LIST_TABS: WorkTabItem[] = [
   { key: 'all', label: '전체', count: 10 },
@@ -20,8 +20,8 @@ export const WORK_ITEMS: WorkItem[] = [
     category: '블록 이동',
     objectCode: 'BT001',
     objectName: '함수',
-    departureCode: 'N1-b4',
-    departureName: '내업1공장',
+    departureCode: WORK_TEST_DEPARTURE_CODE,
+    departureName: '기자재공장',
     detail: {
       weightTons: 10,
       dimensions: '10*20*10',

@@ -6,6 +6,7 @@ import maplibregl, {
 import { onUnmounted, watch } from 'vue'
 
 import type { WorkExecutionPhase } from '@/features/logged/dashboard/types/work-list'
+import { YARD_DEFAULT_BEARING } from '@/shared/constants/map-yard'
 
 import type { Feature, FeatureCollection, LineString } from 'geojson'
 
@@ -27,6 +28,9 @@ interface MapExecutionContext {
 const ROUTE_SOURCE_ID = 'work-execution-route-source'
 const ROUTE_CASING_LAYER_ID = 'work-execution-route-casing'
 const ROUTE_LINE_LAYER_ID = 'work-execution-route-line'
+const ROUTE_CAMERA_DURATION_MS = 700
+const ROUTE_CAMERA_MAX_ZOOM_INCREASE = 2
+const ROUTE_CAMERA_PADDING_PX = 80
 const VEHICLE_MOVEMENT_DURATION_MS = 12_000
 const EMPTY_ROUTE_DATA: FeatureCollection<LineString> = {
   type: 'FeatureCollection',
@@ -169,6 +173,30 @@ export function useWorkMapExecution(options: WorkMapExecutionOptions) {
         'destination',
       ),
     ]
+
+    const currentZoom = context.map.getZoom()
+    const bounds = new maplibregl.LngLatBounds()
+      .extend(context.start)
+      .extend(context.destination)
+    const routeCamera = context.map.cameraForBounds(bounds, {
+      bearing: YARD_DEFAULT_BEARING,
+      maxZoom: currentZoom + ROUTE_CAMERA_MAX_ZOOM_INCREASE,
+      padding: ROUTE_CAMERA_PADDING_PX,
+    })
+
+    if (
+      !routeCamera?.center ||
+      routeCamera.zoom === undefined ||
+      !Number.isFinite(routeCamera.zoom)
+    ) {
+      return
+    }
+
+    context.map.easeTo({
+      ...routeCamera,
+      duration: ROUTE_CAMERA_DURATION_MS,
+      zoom: Math.max(currentZoom, routeCamera.zoom),
+    })
   }
 
   function animateVehicle() {
