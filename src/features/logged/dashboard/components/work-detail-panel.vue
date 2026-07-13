@@ -200,7 +200,10 @@ const rowHeightClass = computed(() => {
               <td
                 class="border border-hw-gray-lighter px-4 font-bold text-hw-green-light"
               >
-                {{ task.departureCode }}
+                {{ task.departureCode
+                }}<span v-if="task.departureName" class="text-hw-gray-main">
+                  ({{ task.departureName }})</span
+                >
               </td>
               <th
                 scope="row"

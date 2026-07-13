@@ -9,6 +9,10 @@ import { onMounted, onUnmounted, shallowRef, useTemplateRef } from 'vue'
 import 'maplibre-gl/dist/maplibre-gl.css'
 
 import { useWorkMapExecution } from '@/features/logged/dashboard/composables/use-work-map-execution'
+import {
+  WORK_TEST_DEPARTURE_CODE,
+  WORK_TEST_DESTINATION_CODE,
+} from '@/features/logged/dashboard/constants/work-list'
 import type { WorkExecutionPhase } from '@/features/logged/dashboard/types/work-list'
 import { JIBUN_SEED } from '@/features/logged/jibun/constants/jibun-data'
 import { getMapLibreStyle } from '@/shared/constants/map'
@@ -46,7 +50,6 @@ interface ParcelFeatureGroup {
 }
 
 const MAP_ZOOM_OFFSET = 1
-const VEHICLE_MARKER_LEFT_OFFSET_PX = 36
 const YARD_LONGITUDES = YARD_GRID_BOUNDARY_COORDINATES.map(([lng]) => lng)
 const YARD_LATITUDES = YARD_GRID_BOUNDARY_COORDINATES.map(([, lat]) => lat)
 const MAP_BOUNDS: LngLatBoundsLike = [
@@ -144,14 +147,19 @@ function addVehicleMarker(map: MapLibreMap) {
   vehicleMarkerRef.value?.remove()
   vehicleMarkerRef.value = null
 
-  const r1Polygon = parcelPolygons.find((polygon) => polygon.name === 'R1')
-  const center = r1Polygon ? getPolygonCenter(r1Polygon.points) : null
-  if (!center) return
-  const r1ScreenPoint = map.project(center)
-  const vehiclePosition = map.unproject([
-    r1ScreenPoint.x - VEHICLE_MARKER_LEFT_OFFSET_PX,
-    r1ScreenPoint.y,
-  ])
+  const departurePolygon = parcelPolygons.find(
+    (polygon) => polygon.name === WORK_TEST_DEPARTURE_CODE,
+  )
+  const destinationPolygon = parcelPolygons.find(
+    (polygon) => polygon.name === WORK_TEST_DESTINATION_CODE,
+  )
+  const startCenter = departurePolygon
+    ? getPolygonCenter(departurePolygon.points)
+    : null
+  const destinationCenter = destinationPolygon
+    ? getPolygonCenter(destinationPolygon.points)
+    : null
+  if (!startCenter || !destinationCenter) return
 
   const element = document.createElement('div')
   element.className = 'dashboard-map-marker dashboard-map-marker--vehicle'
@@ -177,14 +185,14 @@ function addVehicleMarker(map: MapLibreMap) {
     element,
     anchor: 'bottom',
   })
-    .setLngLat(vehiclePosition)
+    .setLngLat([startCenter.lng, startCenter.lat])
     .addTo(map)
 
   attachMapExecution({
     map,
     vehicleMarker: vehicleMarkerRef.value,
-    start: [vehiclePosition.lng, vehiclePosition.lat],
-    destination: [center.lng, center.lat],
+    start: [startCenter.lng, startCenter.lat],
+    destination: [destinationCenter.lng, destinationCenter.lat],
   })
 }
 
