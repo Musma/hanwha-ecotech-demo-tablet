@@ -39,14 +39,9 @@ import { Button } from '@/shared/components/ui/button'
         type="button"
         variant="brand-ghost"
         size="brand-icon"
-        class="relative"
         title="알림"
       >
         <i class="ti ti-bell" />
-        <span
-          class="absolute top-0.5 right-0.5 min-w-[15px] h-[15px] px-[3px] rounded-md bg-hw-red-main text-white font-numeric font-semibold text-[10px] leading-[15px] text-center"
-          >1</span
-        >
       </Button>
     </div>
   </header>

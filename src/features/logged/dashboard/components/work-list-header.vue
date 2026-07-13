@@ -61,14 +61,10 @@ const emit = defineEmits<{
 
       <button
         type="button"
-        class="relative inline-flex size-8 items-center justify-center text-xl"
-        aria-label="알림 1건"
+        class="inline-flex size-8 items-center justify-center text-xl"
+        aria-label="알림"
       >
-        <i class="ti ti-bell-filled" aria-hidden="true" />
-        <span
-          class="absolute -right-0.5 -top-0.5 min-w-4 rounded-full bg-hw-red-main px-1 text-center text-c2 font-bold leading-4 text-hw-white-main"
-          >1</span
-        >
+        <i class="ti ti-bell" aria-hidden="true" />
       </button>
     </div>
   </header>
