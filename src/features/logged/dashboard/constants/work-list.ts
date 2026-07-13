@@ -5,7 +5,7 @@ import type {
 
 export const WORK_TEST_DEPARTURE_CODE = 'N1-b4'
 
-export const WORK_TEST_DESTINATION_CODE = 'R1'
+export const WORK_TEST_DESTINATION_CODE = 'EM-b1'
 
 export const WORK_LIST_TABS: WorkTabItem[] = [
   { key: 'all', label: '전체', count: 10 },

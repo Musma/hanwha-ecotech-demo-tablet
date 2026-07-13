@@ -6,7 +6,6 @@ import maplibregl, {
 import { onUnmounted, watch } from 'vue'
 
 import type { WorkExecutionPhase } from '@/features/logged/dashboard/types/work-list'
-import { YARD_DEFAULT_BEARING } from '@/shared/constants/map-yard'
 
 import type { Feature, FeatureCollection, LineString } from 'geojson'
 
@@ -170,17 +169,6 @@ export function useWorkMapExecution(options: WorkMapExecutionOptions) {
         'destination',
       ),
     ]
-
-    const bounds = new maplibregl.LngLatBounds(
-      context.start,
-      context.destination,
-    )
-    context.map.fitBounds(bounds, {
-      bearing: YARD_DEFAULT_BEARING,
-      duration: 700,
-      maxZoom: context.map.getZoom(),
-      padding: 80,
-    })
   }
 
   function animateVehicle() {
