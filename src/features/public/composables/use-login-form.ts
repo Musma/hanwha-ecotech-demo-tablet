@@ -2,8 +2,8 @@ import { computed, shallowRef } from 'vue'
 
 /** 로그인 폼의 입력 상태와 제출 흐름을 담당하는 composable. */
 export function useLoginForm() {
-  const username = shallowRef('')
-  const password = shallowRef('')
+  const username = shallowRef('ecotec')
+  const password = shallowRef('1234')
   const passwordVisible = shallowRef(false)
   const submitting = shallowRef(false)
 
