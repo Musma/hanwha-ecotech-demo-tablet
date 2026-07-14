@@ -64,8 +64,8 @@ function statusLabel(status: WorkItem['status']) {
             :disabled="task.status !== 'pending'"
             @click="emit('selectTask', task)"
           >
-            <div class="grid grid-cols-[68px_minmax(0,1fr)] gap-x-3 gap-y-2">
-              <div class="flex flex-col items-center gap-2">
+            <div class="grid grid-cols-[80px_minmax(0,1fr)] gap-x-4 gap-y-2">
+              <div class="flex flex-col items-start gap-2">
                 <span
                   class="inline-flex h-6 items-center rounded-sm px-3 text-c2 font-bold"
                   :class="
@@ -76,33 +76,40 @@ function statusLabel(status: WorkItem['status']) {
                 >
                   {{ statusLabel(task.status) }}
                 </span>
-                <strong class="text-b2 font-normal text-hw-gray-darker">
-                  {{ task.id }}
-                </strong>
+                <span class="text-s2 whitespace-nowrap text-hw-gray-dark">
+                  호선 : <strong class="font-bold">{{ task.hullNo }}</strong>
+                </span>
               </div>
 
               <div class="min-w-0">
-                <p
-                  class="m-0 flex flex-wrap items-center gap-x-3 gap-y-1 text-b2 text-hw-gray-dark"
-                >
-                  <strong class="font-bold">{{ task.category }}</strong>
-                  <span class="font-bold text-hw-blue-main">
-                    {{ task.objectCode }}
+                <p class="m-0 text-b2 text-hw-gray-darker">
+                  실행계획 Activity
+                  <strong class="font-bold">{{ task.activityCode }}</strong>
+                  <span class="font-bold text-hw-orange-main">
+                    ({{ task.stage }})
                   </span>
-                  <span>{{ task.objectName }}</span>
                 </p>
 
-                <p
-                  class="mt-2 mb-0 flex flex-wrap items-center gap-x-1 text-s2 text-hw-gray-dark"
+                <div
+                  class="mt-2 grid grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] gap-x-4 gap-y-1 text-s2 text-hw-gray-dark"
                 >
-                  <span>출발지 :</span>
-                  <span
-                    class="font-bold text-hw-orange-main underline underline-offset-2"
-                  >
-                    {{ task.departureCode }}
+                  <span>블록No. : {{ task.blockNo }}</span>
+                  <span>
+                    출발지 :
+                    <strong class="font-bold">{{ task.departureCode }}</strong
+                    ><span class="font-bold text-hw-orange-main"
+                      >({{ task.departureName }})</span
+                    >
                   </span>
-                  <span>{{ task.departureName }}</span>
-                </p>
+                  <span>PCG : {{ task.pcg }}</span>
+                  <span>
+                    도착지 :
+                    <strong class="font-bold">{{ task.arrivalCode }}</strong
+                    ><span class="font-bold text-hw-orange-main"
+                      >({{ task.arrivalName }})</span
+                    >
+                  </span>
+                </div>
               </div>
             </div>
           </button>

@@ -21,10 +21,6 @@ const emit = defineEmits<{
   startWork: []
 }>()
 
-const detail = computed(() => ({
-  dimensions: props.task.detail?.dimensions ?? '10*20*10',
-  weightTons: props.task.detail?.weightTons ?? 10,
-}))
 const isWaiting = computed(() => props.phase === 'waiting')
 const isInProgress = computed(() => props.phase === 'inProgress')
 const isCompleted = computed(() => props.phase === 'completed')
@@ -71,10 +67,10 @@ const rowHeightClass = computed(() => {
         class="h-full w-full table-fixed border-collapse text-b2 text-hw-gray-dark"
       >
         <colgroup>
-          <col class="w-[28%]" />
-          <col class="w-[22%]" />
-          <col class="w-[28%]" />
-          <col class="w-[22%]" />
+          <col class="w-[24%]" />
+          <col class="w-[26%]" />
+          <col class="w-[24%]" />
+          <col class="w-[26%]" />
         </colgroup>
         <tbody>
           <tr :class="rowHeightClass">
@@ -91,10 +87,10 @@ const rowHeightClass = computed(() => {
               scope="row"
               class="whitespace-nowrap border border-hw-gray-lighter bg-hw-white-lighter px-3 text-left font-normal"
             >
-              작업대상
+              실행계획
             </th>
             <td class="border border-hw-gray-lighter px-4 font-bold">
-              {{ task.objectCode }}
+              {{ task.activityCode }}
             </td>
           </tr>
           <tr :class="rowHeightClass">
@@ -102,46 +98,40 @@ const rowHeightClass = computed(() => {
               scope="row"
               class="whitespace-nowrap border border-hw-gray-lighter bg-hw-white-lighter px-3 text-left font-normal"
             >
-              명칭
+              호선
             </th>
             <td class="border border-hw-gray-lighter px-4 font-bold">
-              {{ task.objectName }}
+              {{ task.hullNo }}
             </td>
             <th
               scope="row"
               class="whitespace-nowrap border border-hw-gray-lighter bg-hw-white-lighter px-3 text-left font-normal"
             >
-              중량(ton)
+              블록No.
             </th>
             <td class="border border-hw-gray-lighter px-4 font-bold">
-              {{ detail.weightTons }}
+              {{ task.blockNo }}
             </td>
           </tr>
           <tr :class="rowHeightClass">
             <th
               scope="row"
-              class="border border-hw-gray-lighter bg-hw-white-lighter px-3 text-left leading-tight font-normal"
+              class="whitespace-nowrap border border-hw-gray-lighter bg-hw-white-lighter px-3 text-left font-normal"
             >
-              <span class="block whitespace-nowrap">길이*폭*높이</span>
-              <span class="block">(m)</span>
+              PCG
             </th>
-            <td
-              class="border border-hw-gray-lighter px-4 font-bold"
-              :colspan="isWaiting ? 1 : 3"
-            >
-              {{ detail.dimensions }}
+            <td class="border border-hw-gray-lighter px-4 font-bold">
+              {{ task.pcg }}
             </td>
-            <template v-if="isWaiting">
-              <th
-                scope="row"
-                class="whitespace-nowrap border border-hw-gray-lighter bg-hw-white-lighter px-3 text-left font-normal"
-              >
-                작업유형
-              </th>
-              <td class="border border-hw-gray-lighter px-4 font-bold">
-                {{ task.category.replace(' ', '') }}
-              </td>
-            </template>
+            <th
+              scope="row"
+              class="whitespace-nowrap border border-hw-gray-lighter bg-hw-white-lighter px-3 text-left font-normal"
+            >
+              작업유형
+            </th>
+            <td class="border border-hw-gray-lighter px-4 font-bold">
+              {{ task.stage }}
+            </td>
           </tr>
 
           <template v-if="isWaiting">
@@ -184,7 +174,9 @@ const rowHeightClass = computed(() => {
                 colspan="3"
                 class="whitespace-pre-line border border-hw-gray-lighter px-4 font-bold"
               >
-                {{ task.detail?.description ?? `${task.objectName} 이동 작업` }}
+                {{
+                  task.detail?.description ?? `${task.blockNo} 블록 이동 작업`
+                }}
               </td>
             </tr>
           </template>
@@ -200,10 +192,7 @@ const rowHeightClass = computed(() => {
               <td
                 class="border border-hw-gray-lighter px-4 font-bold text-hw-green-light"
               >
-                {{ task.departureCode
-                }}<span v-if="task.departureName" class="text-hw-gray-main">
-                  ({{ task.departureName }})</span
-                >
+                {{ task.departureCode }}({{ task.departureName }})
               </td>
               <th
                 scope="row"
@@ -214,7 +203,9 @@ const rowHeightClass = computed(() => {
               <td
                 class="border border-hw-gray-lighter px-4 font-bold text-hw-blue-main"
               >
-                {{ isCompleted ? destinationCode : '' }}
+                {{
+                  isCompleted ? `${task.arrivalCode}(${task.arrivalName})` : ''
+                }}
               </td>
             </tr>
             <tr v-if="isCompleted" :class="rowHeightClass">
