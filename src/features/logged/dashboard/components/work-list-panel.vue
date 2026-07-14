@@ -76,13 +76,13 @@ function statusLabel(status: WorkItem['status']) {
                 >
                   {{ statusLabel(task.status) }}
                 </span>
-                <span class="text-s2 whitespace-nowrap text-hw-gray-dark">
+                <span class="text-c1 whitespace-nowrap text-hw-gray-dark">
                   호선 : <strong class="font-bold">{{ task.hullNo }}</strong>
                 </span>
               </div>
 
               <div class="min-w-0">
-                <p class="m-0 text-b2 text-hw-gray-darker">
+                <p class="m-0 text-s2 text-hw-gray-darker">
                   실행계획 Activity
                   <strong class="font-bold">{{ task.activityCode }}</strong>
                   <span class="font-bold text-hw-orange-main">
@@ -91,7 +91,7 @@ function statusLabel(status: WorkItem['status']) {
                 </p>
 
                 <div
-                  class="mt-2 grid grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] gap-x-4 gap-y-1 text-s2 text-hw-gray-dark"
+                  class="mt-2 grid grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] gap-x-4 gap-y-1 text-c1 text-hw-gray-dark"
                 >
                   <span>블록No. : {{ task.blockNo }}</span>
                   <span>
