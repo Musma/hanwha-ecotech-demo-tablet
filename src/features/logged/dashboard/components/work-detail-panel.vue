@@ -190,9 +190,10 @@ const rowHeightClass = computed(() => {
                 출발지
               </th>
               <td
-                class="border border-hw-gray-lighter px-4 font-bold text-hw-green-light"
+                class="border border-hw-gray-lighter px-4 leading-tight font-bold text-hw-green-light"
               >
-                {{ task.departureCode }}({{ task.departureName }})
+                <span class="block">{{ task.departureCode }}</span>
+                <span class="block">({{ task.departureName }})</span>
               </td>
               <th
                 scope="row"
@@ -201,11 +202,12 @@ const rowHeightClass = computed(() => {
                 도착지
               </th>
               <td
-                class="border border-hw-gray-lighter px-4 font-bold text-hw-blue-main"
+                class="border border-hw-gray-lighter px-4 leading-tight font-bold text-hw-blue-main"
               >
-                {{
-                  isCompleted ? `${task.arrivalCode}(${task.arrivalName})` : ''
-                }}
+                <template v-if="isCompleted">
+                  <span class="block">{{ task.arrivalCode }}</span>
+                  <span class="block">({{ task.arrivalName }})</span>
+                </template>
               </td>
             </tr>
             <tr v-if="isCompleted" :class="rowHeightClass">
