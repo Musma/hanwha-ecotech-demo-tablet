@@ -85,7 +85,7 @@ function statusLabel(status: WorkItem['status']) {
                 <p class="m-0 text-s2 text-hw-gray-darker">
                   실행계획 Activity
                   <strong class="font-bold">{{ task.activityCode }}</strong>
-                  <span class="font-bold text-hw-orange-main">
+                  <span class="font-bold text-hw-gray-darker">
                     ({{ task.stage }})
                   </span>
                 </p>
@@ -97,7 +97,7 @@ function statusLabel(status: WorkItem['status']) {
                   <span>
                     출발지 :
                     <strong class="font-bold">{{ task.departureCode }}</strong
-                    ><span class="font-bold text-hw-orange-main"
+                    ><span class="font-bold text-hw-gray-darker"
                       >({{ task.departureName }})</span
                     >
                   </span>
@@ -105,7 +105,7 @@ function statusLabel(status: WorkItem['status']) {
                   <span>
                     도착지 :
                     <strong class="font-bold">{{ task.arrivalCode }}</strong
-                    ><span class="font-bold text-hw-orange-main"
+                    ><span class="font-bold text-hw-gray-darker"
                       >({{ task.arrivalName }})</span
                     >
                   </span>
