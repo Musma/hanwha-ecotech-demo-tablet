@@ -28,8 +28,11 @@ interface MapExecutionContext {
 const ROUTE_SOURCE_ID = 'work-execution-route-source'
 const ROUTE_CASING_LAYER_ID = 'work-execution-route-casing'
 const ROUTE_LINE_LAYER_ID = 'work-execution-route-line'
+const DEPARTURE_CAMERA_DURATION_MS = 700
+const DEPARTURE_CAMERA_ZOOM_INCREASE = 1
 const ROUTE_CAMERA_DURATION_MS = 700
-const ROUTE_CAMERA_ZOOM_INCREASE = 1
+const ROUTE_CAMERA_MAX_ZOOM_INCREASE = 2
+const ROUTE_CAMERA_PADDING_PX = 80
 const VEHICLE_MOVEMENT_DURATION_MS = 12_000
 const EMPTY_ROUTE_DATA: FeatureCollection<LineString> = {
   type: 'FeatureCollection',
@@ -43,6 +46,7 @@ function getSmoothMovementProgress(progress: number) {
 export function useWorkMapExecution(options: WorkMapExecutionOptions) {
   let context: MapExecutionContext | null = null
   let animationFrameId: number | null = null
+  let focusedDepartureCode = ''
   let routeEndpointMarkers: Marker[] = []
 
   function cancelMovement() {
@@ -173,15 +177,50 @@ export function useWorkMapExecution(options: WorkMapExecutionOptions) {
       ),
     ]
 
-    const targetZoom = Math.min(
-      context.map.getZoom() + ROUTE_CAMERA_ZOOM_INCREASE,
-      context.map.getMaxZoom(),
-    )
+    const currentZoom = context.map.getZoom()
+    const bounds = new maplibregl.LngLatBounds()
+      .extend(context.start)
+      .extend(context.destination)
+    const routeCamera = context.map.cameraForBounds(bounds, {
+      bearing: YARD_DEFAULT_BEARING,
+      maxZoom: currentZoom + ROUTE_CAMERA_MAX_ZOOM_INCREASE,
+      padding: ROUTE_CAMERA_PADDING_PX,
+    })
+
+    if (
+      !routeCamera?.center ||
+      routeCamera.zoom === undefined ||
+      !Number.isFinite(routeCamera.zoom)
+    ) {
+      return
+    }
+
+    context.map.easeTo({
+      ...routeCamera,
+      duration: ROUTE_CAMERA_DURATION_MS,
+      zoom: Math.max(currentZoom, routeCamera.zoom),
+    })
+  }
+
+  function focusSelectedDeparture() {
+    if (!context) return
+
+    const departureCode = options.departureCode()
+    if (!departureCode) {
+      focusedDepartureCode = ''
+      return
+    }
+    if (departureCode === focusedDepartureCode) return
+
+    focusedDepartureCode = departureCode
     context.map.easeTo({
       bearing: YARD_DEFAULT_BEARING,
-      center: context.destination,
-      duration: ROUTE_CAMERA_DURATION_MS,
-      zoom: targetZoom,
+      center: context.start,
+      duration: DEPARTURE_CAMERA_DURATION_MS,
+      zoom: Math.min(
+        context.map.getZoom() + DEPARTURE_CAMERA_ZOOM_INCREASE,
+        context.map.getMaxZoom(),
+      ),
     })
   }
 
@@ -222,6 +261,7 @@ export function useWorkMapExecution(options: WorkMapExecutionOptions) {
       cancelMovement()
       removeRouteLayers()
       context.vehicleMarker.setLngLat(context.start)
+      focusSelectedDeparture()
       return
     }
 
