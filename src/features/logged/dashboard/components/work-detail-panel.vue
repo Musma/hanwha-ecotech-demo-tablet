@@ -64,7 +64,7 @@ const rowHeightClass = computed(() => {
 
     <div class="mt-4 min-h-0 shrink overflow-hidden" :class="tableHeightClass">
       <table
-        class="h-full w-full table-fixed border-collapse text-b2 text-hw-gray-dark"
+        class="h-full w-full table-fixed border-collapse text-c1 text-hw-gray-dark"
       >
         <colgroup>
           <col class="w-[24%]" />
@@ -87,9 +87,9 @@ const rowHeightClass = computed(() => {
               scope="row"
               class="whitespace-nowrap border border-hw-gray-lighter bg-hw-white-lighter px-3 text-left font-normal"
             >
-              실행계획
+              실행계획 Activity
             </th>
-            <td class="border border-hw-gray-lighter px-4 font-bold">
+            <td class="border border-hw-gray-lighter px-2 font-bold">
               {{ task.activityCode }}
             </td>
           </tr>
