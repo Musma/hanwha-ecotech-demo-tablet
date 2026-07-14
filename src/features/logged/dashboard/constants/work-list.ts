@@ -29,7 +29,7 @@ export const WORK_ITEMS: WorkItem[] = [
     detail: {
       startedAt: '2026/05/20',
       completedAt: '2026/05/20',
-      description: '블록 불출작업을 위한 주변 블록\n이동 작업',
+      description: '블록 이동 작업',
     },
   },
   {
