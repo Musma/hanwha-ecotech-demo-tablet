@@ -36,8 +36,7 @@ const JIBUN_SUFFIX_PATTERN = /^(.*-)([A-Za-z]+)(\d+)$/
 const SAME_ROW_OVERLAP_RATIO = 0.35
 const ORIGINAL_ORDER_PARENT_ABBRS = new Set(['E1'])
 const REVERSED_ORDER_PARENT_ABBRS = new Set(['NI'])
-const REVERSED_MIXED_SUFFIX_PREFIXES = new Set(['02-'])
-const REVERSED_MIXED_SUFFIX_PARENT_ABBRS = new Set(['02'])
+const REVERSED_MIXED_SUFFIX_GROUP_KEYS = new Set(['01:02-'])
 const ORIGINAL_ORDER_YARD_ABBRS = new Set(['2Y'])
 
 export function cloneYardGridBoundaryCoordinates(): number[][] {
@@ -170,15 +169,13 @@ function shouldReverseMixedSuffixOrder(
   items: YardJibunLayoutItem[],
   jibunById: Map<number, YardJibunPolygonSource>,
 ): boolean {
-  if (REVERSED_MIXED_SUFFIX_PREFIXES.has(items[0]?.displayPrefix ?? '')) {
-    return true
-  }
-
   const parentId = items[0]?.parent
   if (parentId == null) return false
 
   const parent = jibunById.get(parentId)
-  return REVERSED_MIXED_SUFFIX_PARENT_ABBRS.has(parent?.abbr ?? '')
+  return REVERSED_MIXED_SUFFIX_GROUP_KEYS.has(
+    `${parent?.abbr ?? ''}:${items[0]?.displayPrefix ?? ''}`,
+  )
 }
 
 function createDisplayNameById(
