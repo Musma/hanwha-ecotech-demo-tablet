@@ -34,6 +34,8 @@ interface YardJibunLayoutItem {
 
 const JIBUN_SUFFIX_PATTERN = /^(.*-)([A-Za-z]+)(\d+)$/
 const SAME_ROW_OVERLAP_RATIO = 0.35
+const ORIGINAL_ORDER_PARENT_ABBRS = new Set(['E1'])
+const REVERSED_ORDER_PARENT_ABBRS = new Set(['NI'])
 const ORIGINAL_ORDER_YARD_ABBRS = new Set(['2Y'])
 
 export function cloneYardGridBoundaryCoordinates(): number[][] {
@@ -142,6 +144,9 @@ function shouldKeepOriginalOrder(
   if (parentId == null) return false
 
   const parent = jibunById.get(parentId)
+  if (ORIGINAL_ORDER_PARENT_ABBRS.has(parent?.abbr ?? '')) return true
+  if (REVERSED_ORDER_PARENT_ABBRS.has(parent?.abbr ?? '')) return false
+
   const yard = parent?.parent == null ? null : jibunById.get(parent.parent)
   return ORIGINAL_ORDER_YARD_ABBRS.has(yard?.abbr ?? '')
 }
