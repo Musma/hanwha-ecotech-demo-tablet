@@ -36,6 +36,8 @@ const JIBUN_SUFFIX_PATTERN = /^(.*-)([A-Za-z]+)(\d+)$/
 const SAME_ROW_OVERLAP_RATIO = 0.35
 const ORIGINAL_ORDER_PARENT_ABBRS = new Set(['E1'])
 const REVERSED_ORDER_PARENT_ABBRS = new Set(['NI'])
+const REVERSED_MIXED_SUFFIX_PREFIXES = new Set(['02-'])
+const REVERSED_MIXED_SUFFIX_PARENT_ABBRS = new Set(['02'])
 const ORIGINAL_ORDER_YARD_ABBRS = new Set(['2Y'])
 
 export function cloneYardGridBoundaryCoordinates(): number[][] {
@@ -164,6 +166,21 @@ function sortJibunLayoutItems(
   return sortedRows.flatMap((row) => row.sort((a, b) => a.minX - b.minX))
 }
 
+function shouldReverseMixedSuffixOrder(
+  items: YardJibunLayoutItem[],
+  jibunById: Map<number, YardJibunPolygonSource>,
+): boolean {
+  if (REVERSED_MIXED_SUFFIX_PREFIXES.has(items[0]?.displayPrefix ?? '')) {
+    return true
+  }
+
+  const parentId = items[0]?.parent
+  if (parentId == null) return false
+
+  const parent = jibunById.get(parentId)
+  return REVERSED_MIXED_SUFFIX_PARENT_ABBRS.has(parent?.abbr ?? '')
+}
+
 function createDisplayNameById(
   jibuns: YardJibunPolygonSource[],
 ): Map<number, string> {
@@ -191,9 +208,17 @@ function createDisplayNameById(
 
     const rows = createJibunLayoutRows(items)
     const mixedLayout = isMixedJibunLayout(rows)
-    const suffixNumbers = [...items]
-      .map((item) => item.suffixNumber)
-      .sort((a, b) => (mixedLayout ? a - b : b - a))
+    const suffixNumbers = [...items].map((item) => item.suffixNumber)
+    if (mixedLayout && shouldReverseMixedSuffixOrder(items, jibunById)) {
+      suffixNumbers.sort((a, b) => a - b)
+      suffixNumbers.splice(
+        1,
+        suffixNumbers.length - 1,
+        ...suffixNumbers.slice(1).reverse(),
+      )
+    } else {
+      suffixNumbers.sort((a, b) => (mixedLayout ? a - b : b - a))
+    }
     const sortedItems = sortJibunLayoutItems(
       rows,
       mixedLayout ? 'ascending' : 'descending',
