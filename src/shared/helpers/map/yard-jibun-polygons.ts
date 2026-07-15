@@ -2,7 +2,7 @@ import {
   YARD_GRID_BOUNDARY_COORDINATES,
   YARD_GRID_BOUNDARY_ROTATION_DEG,
 } from '@/shared/constants/map-yard'
-import type { LatLng } from '@/shared/helpers/map/grid-utils'
+import type { LatLng, LocalPoint } from '@/shared/helpers/map/grid-utils'
 import {
   convertLocalPolyPointToLngLat,
   normalizeGridBoundaryCoordinates,
@@ -18,6 +18,23 @@ export interface YardJibunPolygonSource {
   parent?: number | null
   poly?: string | null
 }
+
+interface YardJibunLayoutItem {
+  id: number
+  parent?: number | null
+  displayPrefix: string
+  displayKind: string
+  suffixNumber: number
+  suffixWidth: number
+  minX: number
+  maxX: number
+  minY: number
+  maxY: number
+}
+
+const JIBUN_SUFFIX_PATTERN = /^(.*-)([A-Za-z]+)(\d+)$/
+const SAME_ROW_OVERLAP_RATIO = 0.35
+const ORIGINAL_ORDER_YARD_ABBRS = new Set(['2Y'])
 
 export function cloneYardGridBoundaryCoordinates(): number[][] {
   if (
@@ -49,6 +66,149 @@ export function getYardJibunKindByLevel(
   return null
 }
 
+function createLayoutItem(
+  jibun: YardJibunPolygonSource,
+  localPoints: LocalPoint[],
+): YardJibunLayoutItem | null {
+  const match = JIBUN_SUFFIX_PATTERN.exec(jibun.abbr ?? '')
+  if (!match || localPoints.length < 3) return null
+
+  const [, displayPrefix, displayKind, suffix] = match
+  const xs = localPoints.map((point) => point.x)
+  const ys = localPoints.map((point) => point.y)
+  const minX = Math.min(...xs)
+  const maxX = Math.max(...xs)
+  const minY = Math.min(...ys)
+  const maxY = Math.max(...ys)
+
+  return {
+    id: jibun.id,
+    parent: jibun.parent,
+    displayPrefix,
+    displayKind,
+    suffixNumber: Number(suffix),
+    suffixWidth: suffix.length,
+    minX,
+    maxX,
+    minY,
+    maxY,
+  }
+}
+
+function localPointRowsOverlap(
+  row: YardJibunLayoutItem[],
+  item: YardJibunLayoutItem,
+): boolean {
+  const rowMinY = Math.min(...row.map((rowItem) => rowItem.minY))
+  const rowMaxY = Math.max(...row.map((rowItem) => rowItem.maxY))
+  const overlap = Math.min(rowMaxY, item.maxY) - Math.max(rowMinY, item.minY)
+  if (overlap <= 0) return false
+
+  const rowHeight = rowMaxY - rowMinY
+  const itemHeight = item.maxY - item.minY
+  return overlap >= Math.min(rowHeight, itemHeight) * SAME_ROW_OVERLAP_RATIO
+}
+
+function createJibunLayoutRows(
+  items: YardJibunLayoutItem[],
+): YardJibunLayoutItem[][] {
+  const rows: YardJibunLayoutItem[][] = []
+
+  for (const item of [...items].sort((a, b) => a.minY - b.minY)) {
+    const row = rows.find((candidate) => localPointRowsOverlap(candidate, item))
+    if (row) {
+      row.push(item)
+    } else {
+      rows.push([item])
+    }
+  }
+
+  return rows
+}
+
+function getRowMinY(row: YardJibunLayoutItem[]): number {
+  return Math.min(...row.map((item) => item.minY))
+}
+
+function isMixedJibunLayout(rows: YardJibunLayoutItem[][]): boolean {
+  return rows.length > 1 && rows.some((row) => row.length > 1)
+}
+
+function shouldKeepOriginalOrder(
+  items: YardJibunLayoutItem[],
+  jibunById: Map<number, YardJibunPolygonSource>,
+): boolean {
+  const parentId = items[0]?.parent
+  if (parentId == null) return false
+
+  const parent = jibunById.get(parentId)
+  const yard = parent?.parent == null ? null : jibunById.get(parent.parent)
+  return ORIGINAL_ORDER_YARD_ABBRS.has(yard?.abbr ?? '')
+}
+
+function sortJibunLayoutItems(
+  rows: YardJibunLayoutItem[][],
+  direction: 'ascending' | 'descending',
+): YardJibunLayoutItem[] {
+  const sortedRows = [...rows].sort((a, b) =>
+    direction === 'ascending'
+      ? getRowMinY(b) - getRowMinY(a)
+      : getRowMinY(a) - getRowMinY(b),
+  )
+
+  return sortedRows.flatMap((row) => row.sort((a, b) => a.minX - b.minX))
+}
+
+function createDisplayNameById(
+  jibuns: YardJibunPolygonSource[],
+): Map<number, string> {
+  const jibunById = new Map(jibuns.map((jibun) => [jibun.id, jibun]))
+  const groups = new Map<string, YardJibunLayoutItem[]>()
+
+  for (const jibun of jibuns) {
+    const localPoints = parseLocalPolyString(jibun.poly)
+    const item = createLayoutItem(jibun, localPoints)
+    if (!item) continue
+
+    const key = [
+      jibun.parent ?? 'root',
+      item.displayPrefix,
+      item.displayKind,
+    ].join(':')
+    groups.set(key, [...(groups.get(key) ?? []), item])
+  }
+
+  const displayNameById = new Map<number, string>()
+
+  for (const items of groups.values()) {
+    if (items.length < 2) continue
+    if (shouldKeepOriginalOrder(items, jibunById)) continue
+
+    const rows = createJibunLayoutRows(items)
+    const mixedLayout = isMixedJibunLayout(rows)
+    const suffixNumbers = [...items]
+      .map((item) => item.suffixNumber)
+      .sort((a, b) => (mixedLayout ? a - b : b - a))
+    const sortedItems = sortJibunLayoutItems(
+      rows,
+      mixedLayout ? 'ascending' : 'descending',
+    )
+
+    for (const [index, item] of sortedItems.entries()) {
+      const suffixNumber = suffixNumbers[index]
+      if (!Number.isFinite(suffixNumber)) continue
+      displayNameById.set(
+        item.id,
+        `${item.displayPrefix}${item.displayKind}${String(
+          suffixNumber,
+        ).padStart(item.suffixWidth, '0')}`,
+      )
+    }
+  }
+
+  return displayNameById
+}
+
 export function createYardJibunPolygons(
   jibuns: YardJibunPolygonSource[],
   origin: LatLng,
@@ -57,7 +217,9 @@ export function createYardJibunPolygons(
     cloneYardGridBoundaryCoordinates(),
     origin,
   )
-  return (Array.isArray(jibuns) ? jibuns : [])
+  const normalizedJibuns = Array.isArray(jibuns) ? jibuns : []
+  const displayNameById = createDisplayNameById(normalizedJibuns)
+  return normalizedJibuns
     .map((jibun) => {
       const jibunKind: string | null =
         getYardJibunKindByLevel(jibun.level) ??
@@ -72,7 +234,11 @@ export function createYardJibunPolygons(
       if (points.length < 3) return null
       return {
         id: `jibun-${jibun.id}`,
-        name: jibun.abbr || jibun.name || String(jibun.id),
+        name:
+          displayNameById.get(jibun.id) ||
+          jibun.abbr ||
+          jibun.name ||
+          String(jibun.id),
         points,
         colorKey: jibunKind,
       } as PolygonShape
