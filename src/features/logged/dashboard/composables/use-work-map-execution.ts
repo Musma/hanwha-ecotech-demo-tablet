@@ -253,7 +253,7 @@ export function useWorkMapExecution(options: WorkMapExecutionOptions) {
     })
   }
 
-  function drawWaitingDestinationMarker() {
+  function drawDestinationMarker() {
     if (!context) return
 
     const departureCode = options.departureCode()
@@ -324,7 +324,7 @@ export function useWorkMapExecution(options: WorkMapExecutionOptions) {
       cancelMovement()
       removeRouteLayers()
       context.vehicleMarker.setLngLat(context.start)
-      drawWaitingDestinationMarker()
+      drawDestinationMarker()
       focusSelectedDeparture()
       return
     }
@@ -332,6 +332,7 @@ export function useWorkMapExecution(options: WorkMapExecutionOptions) {
     if (phase === 'inProgress') {
       removeRouteLayers()
       context.vehicleMarker.setLngLat(context.start)
+      drawDestinationMarker()
       animateVehicle()
       return
     }
