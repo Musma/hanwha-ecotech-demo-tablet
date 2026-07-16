@@ -55,17 +55,14 @@ function createRoadCellSet() {
   for (const road of ROAD_JIBUN_SEED) {
     for (const range of road.cellRanges) {
       if (range.axis === 'row') {
-        // Road seed ranges are authored from the visual local grid:
-        // `row` stores the fixed physical column for vertical road slices.
-        for (let row = range.from; row <= range.to; row += 1) {
-          cells.add(createCellKey([range.row, row]))
+        for (let column = range.from; column <= range.to; column += 1) {
+          cells.add(createCellKey([column, range.row]))
         }
         continue
       }
 
-      // `column` stores the fixed physical row for horizontal road slices.
-      for (let column = range.from; column <= range.to; column += 1) {
-        cells.add(createCellKey([column, range.column]))
+      for (let row = range.from; row <= range.to; row += 1) {
+        cells.add(createCellKey([range.column, row]))
       }
     }
   }
