@@ -5,11 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0 --port 4000",
-    "build": "vue-tsc --noEmit && vite build",
+    "build": "pnpm check:vworld-env && vue-tsc --noEmit && vite build",
     "preview": "vite preview --host 0.0.0.0 --port 4000",
     "lint": "eslint \"**/*.{ts,vue}\" --fix",
     "lint:staged": "lint-staged",
     "type-check": "vue-tsc --noEmit",
+    "check:vworld-env": "node scripts/check-vworld-env.mjs",
     "check:tokens": "node scripts/design-tokens/check-tokens.mjs",
     "design:qa": "pnpm build && pnpm check:tokens",
     "tokens:codemod": "node scripts/design-tokens/codemod.mjs",

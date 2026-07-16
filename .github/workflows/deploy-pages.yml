@@ -37,6 +37,8 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build
+        env:
+          VITE_VWORLD_API_KEY: ${{ secrets.VITE_VWORLD_API_KEY }}
         run: pnpm build
 
       - name: Configure GitHub Pages
