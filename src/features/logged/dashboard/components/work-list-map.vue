@@ -139,6 +139,21 @@ function getParcelCenterByCode(code: string) {
   return polygon ? getPolygonCenter(polygon.points) : null
 }
 
+function getPreferredRoadWaypoints(
+  departureCode: string,
+  destinationCode: string,
+): PhysCell[] {
+  if (!departureCode.startsWith('EM-') || !destinationCode.startsWith('N1-')) {
+    return []
+  }
+
+  return [
+    [26, 65],
+    [7, 65],
+    [7, 52],
+  ]
+}
+
 function createParcelFeatureGroups(): ParcelFeatureGroup[] {
   const coordinatesByFill = new Map<string, MultiPolygon['coordinates']>()
 
@@ -298,6 +313,10 @@ function addVehicleMarker(map: MapLibreMap) {
           startPhys,
           destinationLngLat: destinationCoordinate,
           destinationPhys,
+          preferredRoadWaypoints: getPreferredRoadWaypoints(
+            departureCode,
+            destinationCode,
+          ),
         })
       : null
 

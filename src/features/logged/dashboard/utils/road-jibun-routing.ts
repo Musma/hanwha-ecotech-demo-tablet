@@ -14,6 +14,7 @@ type PhysCell = [number, number]
 interface RoadRouteRequest {
   destinationLngLat: Coordinate
   destinationPhys: PhysCell
+  preferredRoadWaypoints?: PhysCell[]
   startLngLat: Coordinate
   startPhys: PhysCell
 }
@@ -138,6 +139,28 @@ function findRoadCellPath(
   return path.reverse()
 }
 
+function findRoadCellPathThroughWaypoints(cells: PhysCell[]) {
+  const route: PhysCell[] = []
+
+  for (let index = 0; index < cells.length - 1; index += 1) {
+    const segmentPath =
+      findRoadCellPath(
+        cells[index],
+        cells[index + 1],
+        STRAIGHT_CELL_DIRECTIONS,
+      ) ??
+      findRoadCellPath(cells[index], cells[index + 1], [
+        ...STRAIGHT_CELL_DIRECTIONS,
+        ...DIAGONAL_CELL_DIRECTIONS,
+      ])
+    if (!segmentPath) return null
+
+    route.push(...(index === 0 ? segmentPath : segmentPath.slice(1)))
+  }
+
+  return route
+}
+
 function compressStraightCells(path: PhysCell[]) {
   if (path.length <= 2) return path
 
@@ -187,6 +210,7 @@ function appendCoordinate(coordinates: Coordinate[], coordinate: Coordinate) {
 export function createOptimalRoadJibunRoute({
   destinationLngLat,
   destinationPhys,
+  preferredRoadWaypoints = [],
   startLngLat,
   startPhys,
 }: RoadRouteRequest): Coordinate[] | null {
@@ -194,16 +218,14 @@ export function createOptimalRoadJibunRoute({
   const destinationRoadCell = getNearestRoadCell(destinationPhys)
   if (!startRoadCell || !destinationRoadCell) return null
 
-  const roadCellPath =
-    findRoadCellPath(
-      startRoadCell,
-      destinationRoadCell,
-      STRAIGHT_CELL_DIRECTIONS,
-    ) ??
-    findRoadCellPath(startRoadCell, destinationRoadCell, [
-      ...STRAIGHT_CELL_DIRECTIONS,
-      ...DIAGONAL_CELL_DIRECTIONS,
-    ])
+  const waypointCells = preferredRoadWaypoints.filter((cell) =>
+    ROAD_CELL_KEYS.has(createCellKey(cell)),
+  )
+  const roadCellPath = findRoadCellPathThroughWaypoints([
+    startRoadCell,
+    ...waypointCells,
+    destinationRoadCell,
+  ])
   if (!roadCellPath) return null
 
   const coordinates: Coordinate[] = []
