@@ -61,6 +61,10 @@ interface ParcelFeatureGroup {
 type PhysCell = [number, number]
 
 const MAP_ZOOM_OFFSET = 1
+const JIBUN_MARKER_SCALE_MIN_ZOOM = 13
+const JIBUN_MARKER_SCALE_MAX_ZOOM = 16
+const JIBUN_MARKER_MIN_SCALE = 0.55
+const JIBUN_MARKER_MAX_SCALE = 1
 const ROAD_JIBUN_SOURCE_ID = 'work-list-road-jibun'
 const ROAD_JIBUN_FILL_LAYER_ID = 'work-list-road-jibun-fill'
 const ROAD_JIBUN_LINE_LAYER_ID = 'work-list-road-jibun-line'
@@ -221,6 +225,33 @@ function clearParcelLabelMarkers() {
   labelMarkerRefs.value = []
 }
 
+function getResponsiveJibunMarkerScale(zoom: number) {
+  if (!Number.isFinite(zoom)) return JIBUN_MARKER_MAX_SCALE
+  if (zoom <= JIBUN_MARKER_SCALE_MIN_ZOOM) return JIBUN_MARKER_MIN_SCALE
+  if (zoom >= JIBUN_MARKER_SCALE_MAX_ZOOM) return JIBUN_MARKER_MAX_SCALE
+
+  const progress =
+    (zoom - JIBUN_MARKER_SCALE_MIN_ZOOM) /
+    (JIBUN_MARKER_SCALE_MAX_ZOOM - JIBUN_MARKER_SCALE_MIN_ZOOM)
+  return (
+    JIBUN_MARKER_MIN_SCALE +
+    progress * (JIBUN_MARKER_MAX_SCALE - JIBUN_MARKER_MIN_SCALE)
+  )
+}
+
+function updateResponsiveJibunMarkerScale() {
+  const map = mapRef.value
+  const scale = getResponsiveJibunMarkerScale(
+    map?.getZoom() ?? JIBUN_MARKER_SCALE_MAX_ZOOM,
+  )
+
+  labelMarkerRefs.value.forEach((marker) => {
+    marker
+      .getElement()
+      .style.setProperty('--dashboard-jibun-marker-scale', scale.toFixed(3))
+  })
+}
+
 function addParcelLabelMarkers(map: MapLibreMap) {
   clearParcelLabelMarkers()
   labelMarkerRefs.value = parcelPolygons
@@ -230,15 +261,18 @@ function addParcelLabelMarkers(map: MapLibreMap) {
       const center = getPolygonCenter(polygon.points)
       if (!center) return null
       const element = document.createElement('div')
-      element.className =
-        'rounded-sm bg-hw-gray-darker/75 px-1.5 py-0.5 text-c1 font-bold text-hw-white-main shadow-sm'
-      element.textContent = polygon.name
+      element.className = 'dashboard-jibun-label'
+      const body = document.createElement('span')
+      body.className = 'dashboard-jibun-label__body'
+      body.textContent = polygon.name
+      element.append(body)
 
       return new maplibregl.Marker({ element, anchor: 'center' })
         .setLngLat([center.lng, center.lat])
         .addTo(map)
     })
     .filter((marker): marker is Marker => Boolean(marker))
+  updateResponsiveJibunMarkerScale()
 }
 
 function addVehicleMarker(map: MapLibreMap) {
@@ -323,6 +357,7 @@ function initializeMap() {
   })
 
   mapRef.value = map
+  map.on('zoom', updateResponsiveJibunMarkerScale)
   map.once('load', () => {
     map.jumpTo({
       bearing: YARD_DEFAULT_BEARING,
@@ -378,6 +413,7 @@ onUnmounted(() => {
   clearParcelLabelMarkers()
   vehicleMarkerRef.value?.remove()
   vehicleMarkerRef.value = null
+  mapRef.value?.off('zoom', updateResponsiveJibunMarkerScale)
   mapRef.value?.remove()
   mapRef.value = null
   mapReady.value = false
