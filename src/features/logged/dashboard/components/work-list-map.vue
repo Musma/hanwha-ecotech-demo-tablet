@@ -4,7 +4,7 @@ import maplibregl, {
   type Map as MapLibreMap,
   type Marker,
 } from 'maplibre-gl'
-import { onMounted, onUnmounted, shallowRef, useTemplateRef } from 'vue'
+import { onMounted, onUnmounted, shallowRef, useTemplateRef, watch } from 'vue'
 
 import 'maplibre-gl/dist/maplibre-gl.css'
 
@@ -15,14 +15,19 @@ import {
   WORK_TEST_DESTINATION_CODE,
 } from '@/features/logged/dashboard/constants/work-list'
 import type { WorkExecutionPhase } from '@/features/logged/dashboard/types/work-list'
+import { createOptimalRoadJibunRoute } from '@/features/logged/dashboard/utils/road-jibun-routing'
 import { JIBUN_SEED } from '@/features/logged/jibun/constants/jibun-data'
 import { getMapLibreStyle } from '@/shared/constants/map'
+import { DEFAULT_GRID_SIZE_METERS } from '@/shared/constants/map-common'
 import {
   YARD_DEFAULT_BEARING,
   YARD_DEFAULT_CENTER,
   YARD_GRID_BOUNDARY_COORDINATES,
+  YARD_GRID_BOUNDARY_ROTATION_DEG,
   YARD_JIBUN_KIND_COLORS,
 } from '@/shared/constants/map-yard'
+import { normalizeGridBoundaryCoordinates } from '@/shared/helpers/map/map-geo-helpers'
+import { getPhysicalGridAddress } from '@/shared/helpers/map/physical-address'
 import {
   createYardJibunPolygons,
   createYardRoadJibunPolygons,
@@ -53,6 +58,8 @@ interface ParcelFeatureGroup {
   sourceId: string
 }
 
+type PhysCell = [number, number]
+
 const MAP_ZOOM_OFFSET = 1
 const ROAD_JIBUN_SOURCE_ID = 'work-list-road-jibun'
 const ROAD_JIBUN_FILL_LAYER_ID = 'work-list-road-jibun-fill'
@@ -63,6 +70,15 @@ const MAP_BOUNDS: LngLatBoundsLike = [
   [Math.min(...YARD_LONGITUDES), Math.min(...YARD_LATITUDES)],
   [Math.max(...YARD_LONGITUDES), Math.max(...YARD_LATITUDES)],
 ]
+const YARD_GRID_ORIGIN = {
+  lat: YARD_DEFAULT_CENTER[1],
+  lng: YARD_DEFAULT_CENTER[0],
+}
+const YARD_GRID_BOUNDARY = normalizeGridBoundaryCoordinates(
+  YARD_GRID_BOUNDARY_COORDINATES,
+  YARD_GRID_ORIGIN,
+  YARD_GRID_BOUNDARY_ROTATION_DEG,
+)
 
 const mapRootRef = useTemplateRef<HTMLDivElement>('mapRoot')
 const mapRef = shallowRef<MapLibreMap | null>(null)
@@ -98,6 +114,25 @@ function getPolygonCenter(points: Array<{ lat: number; lng: number }>) {
     lat: sum.lat / points.length,
     lng: sum.lng / points.length,
   }
+}
+
+function getPhysicalCellByCenter(center: { lat: number; lng: number }) {
+  const label = getPhysicalGridAddress(
+    center,
+    YARD_GRID_ORIGIN,
+    DEFAULT_GRID_SIZE_METERS,
+    DEFAULT_GRID_SIZE_METERS,
+    YARD_GRID_BOUNDARY,
+  )
+  const matched = /^\((\d+),\s*(\d+)\)$/.exec(label)
+  if (!matched) return null
+
+  return [Number(matched[1]), Number(matched[2])] satisfies PhysCell
+}
+
+function getParcelCenterByCode(code: string) {
+  const polygon = parcelPolygons.find((item) => item.name === code)
+  return polygon ? getPolygonCenter(polygon.points) : null
 }
 
 function createParcelFeatureGroups(): ParcelFeatureGroup[] {
@@ -210,19 +245,27 @@ function addVehicleMarker(map: MapLibreMap) {
   vehicleMarkerRef.value?.remove()
   vehicleMarkerRef.value = null
 
-  const departurePolygon = parcelPolygons.find(
-    (polygon) => polygon.name === WORK_TEST_DEPARTURE_CODE,
-  )
-  const destinationPolygon = parcelPolygons.find(
-    (polygon) => polygon.name === WORK_TEST_DESTINATION_CODE,
-  )
-  const startCenter = departurePolygon
-    ? getPolygonCenter(departurePolygon.points)
-    : null
-  const destinationCenter = destinationPolygon
-    ? getPolygonCenter(destinationPolygon.points)
-    : null
+  const departureCode = props.departureCode || WORK_TEST_DEPARTURE_CODE
+  const destinationCode = props.destinationCode || WORK_TEST_DESTINATION_CODE
+  const startCenter = getParcelCenterByCode(departureCode)
+  const destinationCenter = getParcelCenterByCode(destinationCode)
   if (!startCenter || !destinationCenter) return
+  const startCoordinate: [number, number] = [startCenter.lng, startCenter.lat]
+  const destinationCoordinate: [number, number] = [
+    destinationCenter.lng,
+    destinationCenter.lat,
+  ]
+  const startPhys = getPhysicalCellByCenter(startCenter)
+  const destinationPhys = getPhysicalCellByCenter(destinationCenter)
+  const routeCoordinates =
+    startPhys && destinationPhys
+      ? createOptimalRoadJibunRoute({
+          startLngLat: startCoordinate,
+          startPhys,
+          destinationLngLat: destinationCoordinate,
+          destinationPhys,
+        })
+      : null
 
   const element = document.createElement('div')
   element.className = 'dashboard-map-marker dashboard-map-marker--vehicle'
@@ -248,14 +291,15 @@ function addVehicleMarker(map: MapLibreMap) {
     element,
     anchor: 'bottom',
   })
-    .setLngLat([startCenter.lng, startCenter.lat])
+    .setLngLat(startCoordinate)
     .addTo(map)
 
   attachMapExecution({
     map,
     vehicleMarker: vehicleMarkerRef.value,
-    start: [startCenter.lng, startCenter.lat],
-    destination: [destinationCenter.lng, destinationCenter.lat],
+    start: startCoordinate,
+    destination: destinationCoordinate,
+    routeCoordinates: routeCoordinates ?? undefined,
   })
 }
 
@@ -322,6 +366,11 @@ function initializeMap() {
 }
 
 onMounted(initializeMap)
+
+watch([() => props.departureCode, () => props.destinationCode], () => {
+  if (!mapRef.value || !mapReady.value) return
+  addVehicleMarker(mapRef.value)
+})
 
 onUnmounted(() => {
   resizeObserverRef.value?.disconnect()

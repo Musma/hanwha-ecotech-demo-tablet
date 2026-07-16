@@ -21,6 +21,7 @@ interface WorkMapExecutionOptions {
 interface MapExecutionContext {
   destination: MapCoordinate
   map: MapLibreMap
+  routeCoordinates?: MapCoordinate[]
   start: MapCoordinate
   vehicleMarker: Marker
 }
@@ -41,6 +42,10 @@ const EMPTY_ROUTE_DATA: FeatureCollection<LineString> = {
 
 function getSmoothMovementProgress(progress: number) {
   return progress * progress * progress * (progress * (progress * 6 - 15) + 10)
+}
+
+function getCoordinateDistance(from: MapCoordinate, to: MapCoordinate) {
+  return Math.hypot(to[0] - from[0], to[1] - from[1])
 }
 
 export function useWorkMapExecution(options: WorkMapExecutionOptions) {
@@ -119,6 +124,50 @@ export function useWorkMapExecution(options: WorkMapExecutionOptions) {
     })
   }
 
+  function getExecutionRoute() {
+    if (!context) return []
+    return context.routeCoordinates && context.routeCoordinates.length >= 2
+      ? context.routeCoordinates
+      : [context.start, context.destination]
+  }
+
+  function interpolateRouteCoordinate(
+    route: MapCoordinate[],
+    progress: number,
+  ): MapCoordinate {
+    if (route.length <= 1) return route[0] ?? [0, 0]
+
+    const easedProgress = getSmoothMovementProgress(progress)
+    const segmentLengths = route
+      .slice(1)
+      .map((coordinate, index) =>
+        getCoordinateDistance(route[index], coordinate),
+      )
+    const totalLength = segmentLengths.reduce((sum, length) => sum + length, 0)
+    if (totalLength <= 0) return route[route.length - 1]
+
+    const targetLength = totalLength * easedProgress
+    let accumulatedLength = 0
+    for (let index = 0; index < segmentLengths.length; index += 1) {
+      const segmentLength = segmentLengths[index]
+      if (accumulatedLength + segmentLength < targetLength) {
+        accumulatedLength += segmentLength
+        continue
+      }
+
+      if (segmentLength <= 0) return route[index + 1]
+      const segmentProgress = (targetLength - accumulatedLength) / segmentLength
+      return [
+        route[index][0] +
+          (route[index + 1][0] - route[index][0]) * segmentProgress,
+        route[index][1] +
+          (route[index + 1][1] - route[index][1]) * segmentProgress,
+      ]
+    }
+
+    return route[route.length - 1]
+  }
+
   function createEndpointMarker(
     coordinate: MapCoordinate,
     labelText: string,
@@ -150,13 +199,14 @@ export function useWorkMapExecution(options: WorkMapExecutionOptions) {
   function drawCompletedRoute() {
     if (!context) return
 
+    const route = getExecutionRoute()
     ensureRouteLayers(context.map)
     const routeFeature: Feature<LineString> = {
       type: 'Feature',
       properties: {},
       geometry: {
         type: 'LineString',
-        coordinates: [context.start, context.destination],
+        coordinates: route,
       },
     }
     setRouteData({
@@ -178,9 +228,10 @@ export function useWorkMapExecution(options: WorkMapExecutionOptions) {
     ]
 
     const currentZoom = context.map.getZoom()
-    const bounds = new maplibregl.LngLatBounds()
-      .extend(context.start)
-      .extend(context.destination)
+    const bounds = route.reduce(
+      (nextBounds, coordinate) => nextBounds.extend(coordinate),
+      new maplibregl.LngLatBounds(),
+    )
     const routeCamera = context.map.cameraForBounds(bounds, {
       bearing: YARD_DEFAULT_BEARING,
       maxZoom: currentZoom + ROUTE_CAMERA_MAX_ZOOM_INCREASE,
@@ -229,19 +280,15 @@ export function useWorkMapExecution(options: WorkMapExecutionOptions) {
 
     cancelMovement()
     const startedAt = performance.now()
-    const { start, destination, vehicleMarker } = context
+    const { vehicleMarker } = context
+    const route = getExecutionRoute()
 
     function moveFrame(now: number) {
       const progress = Math.min(
         (now - startedAt) / VEHICLE_MOVEMENT_DURATION_MS,
         1,
       )
-      const easedProgress = getSmoothMovementProgress(progress)
-
-      vehicleMarker.setLngLat([
-        start[0] + (destination[0] - start[0]) * easedProgress,
-        start[1] + (destination[1] - start[1]) * easedProgress,
-      ])
+      vehicleMarker.setLngLat(interpolateRouteCoordinate(route, progress))
 
       if (progress < 1) {
         animationFrameId = requestAnimationFrame(moveFrame)

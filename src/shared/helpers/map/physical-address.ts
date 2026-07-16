@@ -10,6 +10,18 @@ interface LocalPoint {
   y: number
 }
 
+interface PhysicalGridProjection {
+  columnDirection: LocalPoint
+  heightStep: number
+  maxColumns: number
+  maxRows: number
+  originPoint: LocalPoint
+  rowDirection: LocalPoint
+  totalHeight: number
+  totalWidth: number
+  widthStep: number
+}
+
 function latLngToLocalMeters(
   lat: number,
   lng: number,
@@ -21,6 +33,16 @@ function latLngToLocalMeters(
   return {
     x: (lng - origin.lng) * metersPerDegreeLng,
     y: (lat - origin.lat) * METERS_PER_DEGREE_LAT,
+  }
+}
+
+function localMetersToLatLng(point: LocalPoint, origin: LatLng): LatLng {
+  const metersPerDegreeLng =
+    METERS_PER_DEGREE_LAT *
+    Math.max(Math.cos((origin.lat * Math.PI) / 180), 0.000001)
+  return {
+    lat: origin.lat + point.y / METERS_PER_DEGREE_LAT,
+    lng: origin.lng + point.x / metersPerDegreeLng,
   }
 }
 
@@ -38,30 +60,29 @@ function formatPhysicalGridIndex(index: number): string {
   return String(Math.max(0, Math.floor(Number(index) || 0))).padStart(3, '0')
 }
 
-export function getPhysicalGridAddress(
-  lngLat: LatLng,
+function createPhysicalGridProjection(
   origin: LatLng,
   gridWidth: number,
   gridHeight: number,
   boundaryCoordinates: number[][],
-): string {
+): PhysicalGridProjection | null {
   if (
-    !lngLat ||
     !origin ||
     !Array.isArray(boundaryCoordinates) ||
     boundaryCoordinates.length < 4
   ) {
-    return ''
+    return null
   }
-  const [topLeftRaw, topRightRaw, bottomRightRaw, bottomLeftRaw] =
-    boundaryCoordinates
+
+  const [topLeftRaw, , bottomRightRaw, bottomLeftRaw] = boundaryCoordinates
   if (
-    [topLeftRaw, topRightRaw, bottomRightRaw, bottomLeftRaw].some(
+    [topLeftRaw, bottomRightRaw, bottomLeftRaw].some(
       (point) => !Array.isArray(point) || point.length !== 2,
     )
   ) {
-    return ''
+    return null
   }
+
   const topLeft = latLngToLocalMeters(topLeftRaw[1], topLeftRaw[0], origin)
   const bottomRight = latLngToLocalMeters(
     bottomRightRaw[1],
@@ -73,50 +94,131 @@ export function getPhysicalGridAddress(
     bottomLeftRaw[0],
     origin,
   )
-  const target = latLngToLocalMeters(lngLat.lat, lngLat.lng, origin)
   const widthStep = Math.max(1, Number(gridWidth) || 10)
   const heightStep = Math.max(1, Number(gridHeight) || 10)
-  const downDirection = normalizeVector({
+  const columnDirection = normalizeVector({
     x: bottomRight.x - bottomLeft.x,
     y: bottomRight.y - bottomLeft.y,
   })
-  const rightDirection = normalizeVector({
+  const rowDirection = normalizeVector({
     x: topLeft.x - bottomLeft.x,
     y: topLeft.y - bottomLeft.y,
   })
-  const delta: LocalPoint = {
-    x: target.x - bottomLeft.x,
-    y: target.y - bottomLeft.y,
-  }
-  const xMeters = dotVector(delta, rightDirection)
-  const yMeters = dotVector(delta, downDirection)
   const totalWidth = dotVector(
-    { x: topLeft.x - bottomLeft.x, y: topLeft.y - bottomLeft.y },
-    rightDirection,
+    { x: bottomRight.x - bottomLeft.x, y: bottomRight.y - bottomLeft.y },
+    columnDirection,
   )
   const totalHeight = dotVector(
-    { x: bottomRight.x - bottomLeft.x, y: bottomRight.y - bottomLeft.y },
-    downDirection,
+    { x: topLeft.x - bottomLeft.x, y: topLeft.y - bottomLeft.y },
+    rowDirection,
   )
+  if (totalWidth <= 0 || totalHeight <= 0) return null
+
+  return {
+    columnDirection,
+    heightStep,
+    maxColumns: Math.max(1, Math.floor((totalWidth + 0.0001) / widthStep)),
+    maxRows: Math.max(1, Math.floor((totalHeight + 0.0001) / heightStep)),
+    originPoint: bottomLeft,
+    rowDirection,
+    totalHeight,
+    totalWidth,
+    widthStep,
+  }
+}
+
+export function getPhysicalGridAddress(
+  lngLat: LatLng,
+  origin: LatLng,
+  gridWidth: number,
+  gridHeight: number,
+  boundaryCoordinates: number[][],
+): string {
+  if (!lngLat) return ''
+
+  const projection = createPhysicalGridProjection(
+    origin,
+    gridWidth,
+    gridHeight,
+    boundaryCoordinates,
+  )
+  if (!projection) return ''
+
+  const target = latLngToLocalMeters(lngLat.lat, lngLat.lng, origin)
+  const delta: LocalPoint = {
+    x: target.x - projection.originPoint.x,
+    y: target.y - projection.originPoint.y,
+  }
+  const xMeters = dotVector(delta, projection.columnDirection)
+  const yMeters = dotVector(delta, projection.rowDirection)
   if (
-    totalWidth <= 0 ||
-    totalHeight <= 0 ||
     xMeters < 0 ||
     yMeters < 0 ||
-    xMeters > totalWidth ||
-    yMeters > totalHeight
+    xMeters > projection.totalWidth ||
+    yMeters > projection.totalHeight
   ) {
     return ''
   }
-  const maxColumns = Math.max(1, Math.floor((totalWidth + 0.0001) / widthStep))
-  const maxRows = Math.max(1, Math.floor((totalHeight + 0.0001) / heightStep))
+
   const columnIndex = Math.min(
-    maxColumns - 1,
-    Math.max(0, Math.floor(xMeters / widthStep)),
+    projection.maxColumns - 1,
+    Math.max(0, Math.floor(xMeters / projection.widthStep)),
   )
   const rowIndex = Math.min(
-    maxRows - 1,
-    Math.max(0, Math.floor(yMeters / heightStep)),
+    projection.maxRows - 1,
+    Math.max(0, Math.floor(yMeters / projection.heightStep)),
   )
   return `(${formatPhysicalGridIndex(columnIndex)}, ${formatPhysicalGridIndex(rowIndex)})`
+}
+
+export function getPhysicalGridCellCenter(
+  phys: [number, number],
+  origin: LatLng,
+  gridWidth: number,
+  gridHeight: number,
+  boundaryCoordinates: number[][],
+): LatLng | null {
+  const projection = createPhysicalGridProjection(
+    origin,
+    gridWidth,
+    gridHeight,
+    boundaryCoordinates,
+  )
+  if (!projection || !Array.isArray(phys) || phys.length < 2) return null
+
+  const columnIndex = Math.floor(Number(phys[0]))
+  const rowIndex = Math.floor(Number(phys[1]))
+  if (
+    !Number.isFinite(columnIndex) ||
+    !Number.isFinite(rowIndex) ||
+    columnIndex < 0 ||
+    rowIndex < 0 ||
+    columnIndex >= projection.maxColumns ||
+    rowIndex >= projection.maxRows
+  ) {
+    return null
+  }
+
+  const xMeters = Math.min(
+    projection.totalWidth,
+    (columnIndex + 0.5) * projection.widthStep,
+  )
+  const yMeters = Math.min(
+    projection.totalHeight,
+    (rowIndex + 0.5) * projection.heightStep,
+  )
+
+  return localMetersToLatLng(
+    {
+      x:
+        projection.originPoint.x +
+        projection.columnDirection.x * xMeters +
+        projection.rowDirection.x * yMeters,
+      y:
+        projection.originPoint.y +
+        projection.columnDirection.y * xMeters +
+        projection.rowDirection.y * yMeters,
+    },
+    origin,
+  )
 }
