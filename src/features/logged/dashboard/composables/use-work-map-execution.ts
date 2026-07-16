@@ -34,7 +34,9 @@ const DEPARTURE_CAMERA_ZOOM_INCREASE = 1
 const ROUTE_CAMERA_DURATION_MS = 700
 const ROUTE_CAMERA_MAX_ZOOM_INCREASE = 2
 const ROUTE_CAMERA_PADDING_PX = 80
-const VEHICLE_MOVEMENT_DURATION_MS = 12_000
+const VEHICLE_MOVEMENT_MIN_DURATION_MS = 24_000
+const VEHICLE_MOVEMENT_MAX_DURATION_MS = 34_000
+const VEHICLE_MOVEMENT_DISTANCE_DURATION_SCALE = 2_400_000
 const EMPTY_ROUTE_DATA: FeatureCollection<LineString> = {
   type: 'FeatureCollection',
   features: [],
@@ -46,6 +48,28 @@ function getSmoothMovementProgress(progress: number) {
 
 function getCoordinateDistance(from: MapCoordinate, to: MapCoordinate) {
   return Math.hypot(to[0] - from[0], to[1] - from[1])
+}
+
+function getRouteDistance(route: MapCoordinate[]) {
+  return route
+    .slice(1)
+    .reduce(
+      (distance, coordinate, index) =>
+        distance + getCoordinateDistance(route[index], coordinate),
+      0,
+    )
+}
+
+function getVehicleMovementDuration(route: MapCoordinate[]) {
+  const duration =
+    getRouteDistance(route) * VEHICLE_MOVEMENT_DISTANCE_DURATION_SCALE
+
+  return Math.round(
+    Math.min(
+      Math.max(duration, VEHICLE_MOVEMENT_MIN_DURATION_MS),
+      VEHICLE_MOVEMENT_MAX_DURATION_MS,
+    ),
+  )
 }
 
 export function useWorkMapExecution(options: WorkMapExecutionOptions) {
@@ -298,12 +322,10 @@ export function useWorkMapExecution(options: WorkMapExecutionOptions) {
     const startedAt = performance.now()
     const { vehicleMarker } = context
     const route = getExecutionRoute()
+    const movementDuration = getVehicleMovementDuration(route)
 
     function moveFrame(now: number) {
-      const progress = Math.min(
-        (now - startedAt) / VEHICLE_MOVEMENT_DURATION_MS,
-        1,
-      )
+      const progress = Math.min((now - startedAt) / movementDuration, 1)
       vehicleMarker.setLngLat(interpolateRouteCoordinate(route, progress))
 
       if (progress < 1) {
