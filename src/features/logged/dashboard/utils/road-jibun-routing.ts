@@ -14,7 +14,9 @@ type PhysCell = [number, number]
 interface RoadRouteRequest {
   destinationLngLat: Coordinate
   destinationPhys: PhysCell
+  preferredDestinationRoadCell?: PhysCell
   preferredRoadWaypoints?: PhysCell[]
+  preferredStartRoadCell?: PhysCell
   startLngLat: Coordinate
   startPhys: PhysCell
 }
@@ -102,6 +104,12 @@ function getNearestRoadCell(phys: PhysCell): PhysCell | null {
   return nearestCell
 }
 
+function getPreferredRoadCell(cell: PhysCell | undefined): PhysCell | null {
+  if (!cell || !ROAD_CELL_KEYS.has(createCellKey(cell))) return null
+
+  return cell
+}
+
 function findRoadCellPath(
   startCell: PhysCell,
   destinationCell: PhysCell,
@@ -140,6 +148,8 @@ function findRoadCellPath(
 }
 
 function findRoadCellPathThroughWaypoints(cells: PhysCell[]) {
+  if (cells.length <= 1) return cells
+
   const route: PhysCell[] = []
 
   for (let index = 0; index < cells.length - 1; index += 1) {
@@ -210,22 +220,36 @@ function appendCoordinate(coordinates: Coordinate[], coordinate: Coordinate) {
 export function createOptimalRoadJibunRoute({
   destinationLngLat,
   destinationPhys,
+  preferredDestinationRoadCell,
   preferredRoadWaypoints = [],
+  preferredStartRoadCell,
   startLngLat,
   startPhys,
 }: RoadRouteRequest): Coordinate[] | null {
-  const startRoadCell = getNearestRoadCell(startPhys)
-  const destinationRoadCell = getNearestRoadCell(destinationPhys)
+  const startRoadCell =
+    getPreferredRoadCell(preferredStartRoadCell) ??
+    getNearestRoadCell(startPhys)
+  const destinationRoadCell =
+    getPreferredRoadCell(preferredDestinationRoadCell) ??
+    getNearestRoadCell(destinationPhys)
   if (!startRoadCell || !destinationRoadCell) return null
 
   const waypointCells = preferredRoadWaypoints.filter((cell) =>
     ROAD_CELL_KEYS.has(createCellKey(cell)),
   )
-  const roadCellPath = findRoadCellPathThroughWaypoints([
-    startRoadCell,
-    ...waypointCells,
-    destinationRoadCell,
-  ])
+  const routeCells: PhysCell[] = []
+  for (const cell of [startRoadCell, ...waypointCells, destinationRoadCell]) {
+    if (
+      routeCells.at(-1) &&
+      createCellKey(routeCells.at(-1)!) === createCellKey(cell)
+    ) {
+      continue
+    }
+
+    routeCells.push(cell)
+  }
+
+  const roadCellPath = findRoadCellPathThroughWaypoints(routeCells)
   if (!roadCellPath) return null
 
   const coordinates: Coordinate[] = []

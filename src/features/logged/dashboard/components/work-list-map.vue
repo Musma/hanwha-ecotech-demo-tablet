@@ -60,6 +60,12 @@ interface ParcelFeatureGroup {
 
 type PhysCell = [number, number]
 
+interface PreferredRoadRoute {
+  destinationRoadCell?: PhysCell
+  roadWaypoints: PhysCell[]
+  startRoadCell?: PhysCell
+}
+
 const MAP_ZOOM_OFFSET = 1
 const JIBUN_MARKER_SCALE_MIN_ZOOM = 13
 const JIBUN_MARKER_SCALE_MAX_ZOOM = 16
@@ -139,19 +145,19 @@ function getParcelCenterByCode(code: string) {
   return polygon ? getPolygonCenter(polygon.points) : null
 }
 
-function getPreferredRoadWaypoints(
+function getPreferredRoadRoute(
   departureCode: string,
   destinationCode: string,
-): PhysCell[] {
+): PreferredRoadRoute {
   if (!departureCode.startsWith('EM-') || !destinationCode.startsWith('N1-')) {
-    return []
+    return { roadWaypoints: [] }
   }
 
-  return [
-    [26, 65],
-    [7, 65],
-    [7, 52],
-  ]
+  return {
+    startRoadCell: [26, 65],
+    roadWaypoints: [[7, 65]],
+    destinationRoadCell: [7, 52],
+  }
 }
 
 function createParcelFeatureGroups(): ParcelFeatureGroup[] {
@@ -306,6 +312,10 @@ function addVehicleMarker(map: MapLibreMap) {
   ]
   const startPhys = getPhysicalCellByCenter(startCenter)
   const destinationPhys = getPhysicalCellByCenter(destinationCenter)
+  const preferredRoadRoute = getPreferredRoadRoute(
+    departureCode,
+    destinationCode,
+  )
   const routeCoordinates =
     startPhys && destinationPhys
       ? createOptimalRoadJibunRoute({
@@ -313,10 +323,9 @@ function addVehicleMarker(map: MapLibreMap) {
           startPhys,
           destinationLngLat: destinationCoordinate,
           destinationPhys,
-          preferredRoadWaypoints: getPreferredRoadWaypoints(
-            departureCode,
-            destinationCode,
-          ),
+          preferredStartRoadCell: preferredRoadRoute.startRoadCell,
+          preferredRoadWaypoints: preferredRoadRoute.roadWaypoints,
+          preferredDestinationRoadCell: preferredRoadRoute.destinationRoadCell,
         })
       : null
 
