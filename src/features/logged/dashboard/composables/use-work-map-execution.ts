@@ -34,9 +34,9 @@ const DEPARTURE_CAMERA_ZOOM_INCREASE = 1
 const ROUTE_CAMERA_DURATION_MS = 700
 const ROUTE_CAMERA_MAX_ZOOM_INCREASE = 2
 const ROUTE_CAMERA_PADDING_PX = 80
-const VEHICLE_MOVEMENT_MIN_DURATION_MS = 8_000
-const VEHICLE_MOVEMENT_MAX_DURATION_MS = 16_000
-const VEHICLE_MOVEMENT_DISTANCE_DURATION_SCALE = 1_050_000
+const VEHICLE_MOVEMENT_MIN_DURATION_MS = 12_000
+const VEHICLE_MOVEMENT_MAX_DURATION_MS = 22_000
+const VEHICLE_MOVEMENT_DISTANCE_DURATION_SCALE = 1_450_000
 const EMPTY_ROUTE_DATA: FeatureCollection<LineString> = {
   type: 'FeatureCollection',
   features: [],
@@ -246,18 +246,6 @@ export function useWorkMapExecution(options: WorkMapExecutionOptions) {
 
     const route = drawRouteLine()
     clearRouteEndpointMarkers()
-    routeEndpointMarkers = [
-      createEndpointMarker(
-        context.start,
-        `출발 ${options.departureCode()}`,
-        'origin',
-      ),
-      createEndpointMarker(
-        context.destination,
-        `도착 ${options.destinationCode()}`,
-        'destination',
-      ),
-    ]
 
     const currentZoom = context.map.getZoom()
     const bounds = route.reduce(
@@ -361,7 +349,7 @@ export function useWorkMapExecution(options: WorkMapExecutionOptions) {
     }
 
     if (phase === 'inProgress') {
-      drawRouteLine()
+      removeRouteLayers()
       context.vehicleMarker.setLngLat(context.start)
       drawDestinationMarker()
       animateVehicle()
