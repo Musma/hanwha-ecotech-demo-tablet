@@ -12,4 +12,6 @@ const app = createApp(App)
 app.use(createAppPinia())
 app.use(router)
 
-app.mount('#app')
+void router.isReady().then(() => {
+  app.mount('#app')
+})

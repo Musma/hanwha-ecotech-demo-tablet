@@ -1,12 +1,8 @@
 <script setup lang="ts">
-import { useRoute } from 'vue-router'
-
 import TabletDemoView from '@/features/logged/dashboard/components/tablet-demo-view.vue'
-import type { TabletScreen } from '@/features/logged/dashboard/types/tablet'
+import { consumeTabletStartScreen } from '@/features/logged/dashboard/utils/tablet-start-screen'
 
-const route = useRoute()
-const initialScreen: TabletScreen =
-  route.query.screen === 'work-list' ? 'work-list' : 'locked'
+const initialScreen = consumeTabletStartScreen()
 </script>
 
 <template>
