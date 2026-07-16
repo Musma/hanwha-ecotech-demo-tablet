@@ -52,6 +52,7 @@ export interface YardMapProps {
   boundaryCoordinates?: number[][]
   boundaryRotationDeg?: number
   polygons?: PolygonShape[]
+  roadPolygons?: PolygonShape[]
   colorByKey?: Record<string, string> | null
   rectanglePlacements?: RectanglePlacementSpec[]
   imageOverlays?: FixedImageOverlay[]

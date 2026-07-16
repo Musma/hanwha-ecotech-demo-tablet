@@ -9,6 +9,7 @@ import { onMounted, onUnmounted, shallowRef, useTemplateRef } from 'vue'
 import 'maplibre-gl/dist/maplibre-gl.css'
 
 import { useWorkMapExecution } from '@/features/logged/dashboard/composables/use-work-map-execution'
+import { ROAD_JIBUN_SEED } from '@/features/logged/dashboard/constants/road-jibun-data'
 import {
   WORK_TEST_DEPARTURE_CODE,
   WORK_TEST_DESTINATION_CODE,
@@ -22,7 +23,10 @@ import {
   YARD_GRID_BOUNDARY_COORDINATES,
   YARD_JIBUN_KIND_COLORS,
 } from '@/shared/constants/map-yard'
-import { createYardJibunPolygons } from '@/shared/helpers/map/yard-jibun-polygons'
+import {
+  createYardJibunPolygons,
+  createYardRoadJibunPolygons,
+} from '@/shared/helpers/map/yard-jibun-polygons'
 
 import type { Feature, MultiPolygon, Position } from 'geojson'
 
@@ -50,6 +54,9 @@ interface ParcelFeatureGroup {
 }
 
 const MAP_ZOOM_OFFSET = 1
+const ROAD_JIBUN_SOURCE_ID = 'work-list-road-jibun'
+const ROAD_JIBUN_FILL_LAYER_ID = 'work-list-road-jibun-fill'
+const ROAD_JIBUN_LINE_LAYER_ID = 'work-list-road-jibun-line'
 const YARD_LONGITUDES = YARD_GRID_BOUNDARY_COORDINATES.map(([lng]) => lng)
 const YARD_LATITUDES = YARD_GRID_BOUNDARY_COORDINATES.map(([, lat]) => lat)
 const MAP_BOUNDS: LngLatBoundsLike = [
@@ -70,6 +77,10 @@ const { attachMapExecution } = useWorkMapExecution({
 })
 
 const parcelPolygons = createYardJibunPolygons(JIBUN_SEED, {
+  lat: YARD_DEFAULT_CENTER[1],
+  lng: YARD_DEFAULT_CENTER[0],
+})
+const roadPolygons = createYardRoadJibunPolygons(ROAD_JIBUN_SEED, {
   lat: YARD_DEFAULT_CENTER[1],
   lng: YARD_DEFAULT_CENTER[0],
 })
@@ -116,6 +127,58 @@ function createParcelFeatureGroups(): ParcelFeatureGroup[] {
       properties: { fill },
     },
   }))
+}
+
+function createRoadJibunFeature(): Feature<
+  MultiPolygon,
+  Record<string, never>
+> {
+  const coordinates: MultiPolygon['coordinates'] = []
+
+  roadPolygons.forEach((polygon) => {
+    const ring: Position[] = polygon.points.map(({ lng, lat }) => [lng, lat])
+    if (ring.length < 3) return
+    ring.push([...ring[0]])
+    coordinates.push([ring])
+  })
+
+  return {
+    type: 'Feature',
+    geometry: { type: 'MultiPolygon', coordinates },
+    properties: {},
+  }
+}
+
+function addRoadJibunLayers(map: MapLibreMap) {
+  if (!map.getSource(ROAD_JIBUN_SOURCE_ID)) {
+    map.addSource(ROAD_JIBUN_SOURCE_ID, {
+      type: 'geojson',
+      data: createRoadJibunFeature(),
+    })
+  }
+  if (!map.getLayer(ROAD_JIBUN_FILL_LAYER_ID)) {
+    map.addLayer({
+      id: ROAD_JIBUN_FILL_LAYER_ID,
+      type: 'fill',
+      source: ROAD_JIBUN_SOURCE_ID,
+      paint: {
+        'fill-color': '#111111',
+        'fill-opacity': 0.34,
+      },
+    })
+  }
+  if (!map.getLayer(ROAD_JIBUN_LINE_LAYER_ID)) {
+    map.addLayer({
+      id: ROAD_JIBUN_LINE_LAYER_ID,
+      type: 'line',
+      source: ROAD_JIBUN_SOURCE_ID,
+      paint: {
+        'line-color': '#111111',
+        'line-opacity': 0,
+        'line-width': 0,
+      },
+    })
+  }
 }
 
 function clearParcelLabelMarkers() {
@@ -223,6 +286,7 @@ function initializeMap() {
       zoom: map.getZoom() + MAP_ZOOM_OFFSET,
     })
 
+    addRoadJibunLayers(map)
     createParcelFeatureGroups().forEach((group) => {
       map.addSource(group.sourceId, { type: 'geojson', data: group.data })
       map.addLayer({

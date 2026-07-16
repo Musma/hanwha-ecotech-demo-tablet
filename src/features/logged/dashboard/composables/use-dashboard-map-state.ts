@@ -4,9 +4,13 @@ import {
   DEFAULT_DASHBOARD_DISPLAY_ITEM_STATE,
   DEFAULT_DASHBOARD_MAP_OPTION_STATE,
 } from '@/features/logged/dashboard/constants/dashboard-map-overlay'
+import { ROAD_JIBUN_SEED } from '@/features/logged/dashboard/constants/road-jibun-data'
 import { JIBUN_SEED } from '@/features/logged/jibun/constants/jibun-data'
 import { YARD_DEFAULT_CENTER } from '@/shared/constants/map-yard'
-import { createYardJibunPolygons } from '@/shared/helpers/map/yard-jibun-polygons'
+import {
+  createYardJibunPolygons,
+  createYardRoadJibunPolygons,
+} from '@/shared/helpers/map/yard-jibun-polygons'
 import type {
   MapEntityMarkerItem,
   YardMapProps,
@@ -32,6 +36,10 @@ export function useDashboardMapState() {
     return createYardJibunPolygons(JIBUN_SEED, yardOrigin.value)
   })
 
+  const roadPolygons = computed<YardMapProps['roadPolygons']>(() =>
+    createYardRoadJibunPolygons(ROAD_JIBUN_SEED, yardOrigin.value),
+  )
+
   const mapMarkers = computed<MapEntityMarkerItem[]>(() =>
     DASHBOARD_MAP_MARKERS.filter(
       (marker) => displayItems.value[marker.displayKey],
@@ -43,5 +51,6 @@ export function useDashboardMapState() {
     jibunPolygons,
     mapMarkers,
     mapOptions,
+    roadPolygons,
   }
 }

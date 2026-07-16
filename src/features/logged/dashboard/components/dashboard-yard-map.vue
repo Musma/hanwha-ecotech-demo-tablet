@@ -41,12 +41,14 @@ interface Props {
   mapStyle: string
   mapMarkers?: MapEntityMarkerItem[]
   polygons?: YardMapProps['polygons']
+  roadPolygons?: YardMapProps['roadPolygons']
 }
 
 const props = withDefaults(defineProps<Props>(), {
   gridVisible: false,
   mapMarkers: () => [],
   polygons: () => [],
+  roadPolygons: () => [],
 })
 
 const MAP_VIEW_COORDINATES: [
@@ -67,6 +69,9 @@ const YARD_GRID_LAYER_ID = 'dashboard-yard-grid'
 const JIBUN_POLYGON_SOURCE_ID = 'dashboard-jibun-polygons'
 const JIBUN_POLYGON_FILL_LAYER_ID = 'dashboard-jibun-polygon-fill'
 const JIBUN_POLYGON_LINE_LAYER_ID = 'dashboard-jibun-polygon-line'
+const ROAD_JIBUN_SOURCE_ID = 'dashboard-road-jibun-polygons'
+const ROAD_JIBUN_FILL_LAYER_ID = 'dashboard-road-jibun-polygon-fill'
+const ROAD_JIBUN_LINE_LAYER_ID = 'dashboard-road-jibun-polygon-line'
 
 type ImageOverlayCoordinates = [
   [number, number],
@@ -173,6 +178,81 @@ function createPolygonFeatureCollection(): DashboardGeoJsonFeatureCollection {
     type: 'FeatureCollection',
     features,
   }
+}
+
+function createRoadJibunFeatureCollection(): DashboardGeoJsonFeatureCollection {
+  const features: DashboardGeoJsonFeatureCollection['features'] = []
+
+  for (const polygon of props.roadPolygons) {
+    if (polygon.points.length < 3) continue
+    const coordinates = polygon.points.map((point) => [point.lng, point.lat])
+    coordinates.push(coordinates[0])
+    features.push({
+      type: 'Feature',
+      geometry: {
+        type: 'Polygon',
+        coordinates: [coordinates],
+      },
+      properties: {
+        id: polygon.id,
+        name: polygon.name ?? '',
+      },
+    })
+  }
+
+  return {
+    type: 'FeatureCollection',
+    features,
+  }
+}
+
+function ensureRoadJibunLayers() {
+  const map = mapRef.value
+  if (!map || !mapLoaded.value) return
+
+  if (!map.getSource(ROAD_JIBUN_SOURCE_ID)) {
+    map.addSource(ROAD_JIBUN_SOURCE_ID, {
+      type: 'geojson',
+      data: createEmptyFeatureCollection(),
+    })
+  }
+  if (!map.getLayer(ROAD_JIBUN_FILL_LAYER_ID)) {
+    map.addLayer({
+      id: ROAD_JIBUN_FILL_LAYER_ID,
+      type: 'fill',
+      source: ROAD_JIBUN_SOURCE_ID,
+      paint: {
+        'fill-color': '#111111',
+        'fill-opacity': 0.34,
+      },
+    })
+  }
+  if (!map.getLayer(ROAD_JIBUN_LINE_LAYER_ID)) {
+    map.addLayer({
+      id: ROAD_JIBUN_LINE_LAYER_ID,
+      type: 'line',
+      source: ROAD_JIBUN_SOURCE_ID,
+      paint: {
+        'line-color': '#111111',
+        'line-opacity': 0,
+        'line-width': 0,
+      },
+    })
+  }
+  if (map.getLayer(ROAD_JIBUN_LINE_LAYER_ID)) {
+    map.setPaintProperty(ROAD_JIBUN_LINE_LAYER_ID, 'line-opacity', 0)
+    map.setPaintProperty(ROAD_JIBUN_LINE_LAYER_ID, 'line-width', 0)
+  }
+}
+
+function updateRoadJibunLayers() {
+  const map = mapRef.value
+  if (!map || !mapLoaded.value) return
+
+  ensureRoadJibunLayers()
+  ;(map.getSource(ROAD_JIBUN_SOURCE_ID) as GeoJSONSource | undefined)?.setData(
+    createRoadJibunFeatureCollection(),
+  )
 }
 
 function ensureDashboardOverlayLayers() {
@@ -377,6 +457,7 @@ function initializeMap() {
     ensureDashboardOverlayLayers()
     updateCadVisibility()
     updateGridVisibility()
+    updateRoadJibunLayers()
     updateJibunLayers()
     updateMarkers()
   })
@@ -398,6 +479,7 @@ function syncMapStyle() {
     ensureDashboardOverlayLayers()
     updateCadVisibility()
     updateGridVisibility()
+    updateRoadJibunLayers()
     updateJibunLayers()
     updateMarkers()
   })
@@ -421,6 +503,12 @@ watch(
 watch(
   () => props.polygons,
   () => updateJibunLayers(),
+  { deep: true },
+)
+
+watch(
+  () => props.roadPolygons,
+  () => updateRoadJibunLayers(),
   { deep: true },
 )
 

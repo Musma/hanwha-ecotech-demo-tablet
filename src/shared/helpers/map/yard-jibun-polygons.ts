@@ -19,6 +19,12 @@ export interface YardJibunPolygonSource {
   poly?: string | null
 }
 
+export interface YardRoadJibunPolygonSource {
+  id: string
+  name?: string
+  poly: string
+}
+
 interface YardJibunLayoutItem {
   id: number
   parent?: number | null
@@ -268,6 +274,32 @@ export function createYardJibunPolygons(
           String(jibun.id),
         points,
         colorKey: jibunKind,
+      } as PolygonShape
+    })
+    .filter((polygon): polygon is PolygonShape => Boolean(polygon))
+}
+
+export function createYardRoadJibunPolygons(
+  roads: YardRoadJibunPolygonSource[],
+  origin: LatLng,
+): PolygonShape[] {
+  const boundaryCoordinates = normalizeYardGridBoundaryCoordinates(
+    cloneYardGridBoundaryCoordinates(),
+    origin,
+  )
+  return (Array.isArray(roads) ? roads : [])
+    .map((road) => {
+      const points = parseLocalPolyString(road.poly)
+        .map((point) =>
+          convertLocalPolyPointToLngLat(point, boundaryCoordinates, origin),
+        )
+        .filter((point): point is LatLng => Boolean(point))
+      if (points.length < 3) return null
+
+      return {
+        id: `road-jibun-${road.id}`,
+        name: road.name ?? road.id,
+        points,
       } as PolygonShape
     })
     .filter((polygon): polygon is PolygonShape => Boolean(polygon))
