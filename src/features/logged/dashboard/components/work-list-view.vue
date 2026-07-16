@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { shallowRef } from 'vue'
+import { computed, shallowRef } from 'vue'
 import { useRouter } from 'vue-router'
 
 import WorkDetailPanel from '@/features/logged/dashboard/components/work-detail-panel.vue'
@@ -40,6 +40,9 @@ const {
   startedAt,
   startWork,
 } = useWorkExecution()
+const selectedDestinationCode = computed(
+  () => selectedTask.value?.arrivalCode ?? WORK_TEST_DESTINATION_CODE,
+)
 
 function logout() {
   if (props.embedded) {
@@ -56,7 +59,7 @@ function selectTask(task: WorkItem) {
 }
 
 function endWork() {
-  completeWork(WORK_TEST_DESTINATION_CODE)
+  completeWork(selectedDestinationCode.value)
 }
 </script>
 
@@ -101,7 +104,7 @@ function endWork() {
         />
         <WorkListMap
           :departure-code="selectedTask?.departureCode"
-          :destination-code="WORK_TEST_DESTINATION_CODE"
+          :destination-code="selectedDestinationCode"
           :execution-phase="phase"
         />
       </main>

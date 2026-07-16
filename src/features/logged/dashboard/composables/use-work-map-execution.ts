@@ -253,6 +253,22 @@ export function useWorkMapExecution(options: WorkMapExecutionOptions) {
     })
   }
 
+  function drawWaitingDestinationMarker() {
+    if (!context) return
+
+    const departureCode = options.departureCode()
+    const destinationCode = options.destinationCode()
+    if (!departureCode || !destinationCode) return
+
+    routeEndpointMarkers = [
+      createEndpointMarker(
+        context.destination,
+        `목적지 ${destinationCode}`,
+        'destination',
+      ),
+    ]
+  }
+
   function focusSelectedDeparture() {
     if (!context) return
 
@@ -308,6 +324,7 @@ export function useWorkMapExecution(options: WorkMapExecutionOptions) {
       cancelMovement()
       removeRouteLayers()
       context.vehicleMarker.setLngLat(context.start)
+      drawWaitingDestinationMarker()
       focusSelectedDeparture()
       return
     }
