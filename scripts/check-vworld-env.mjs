@@ -62,7 +62,7 @@ const value = (
 if (!value) {
   console.error(`${REQUIRED_ENV_NAME} is required for production builds.`);
   console.error(
-    "Set it in .env for local builds and as a GitHub Actions secret for Pages deployments.",
+    "Set it in .env for local builds and as a GitHub Actions secret or variable for Pages deployments.",
   );
   process.exit(1);
 }
