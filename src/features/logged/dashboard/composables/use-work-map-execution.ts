@@ -220,8 +220,8 @@ export function useWorkMapExecution(options: WorkMapExecutionOptions) {
       .addTo(context!.map)
   }
 
-  function drawCompletedRoute() {
-    if (!context) return
+  function drawRouteLine() {
+    if (!context) return []
 
     const route = getExecutionRoute()
     ensureRouteLayers(context.map)
@@ -237,6 +237,14 @@ export function useWorkMapExecution(options: WorkMapExecutionOptions) {
       type: 'FeatureCollection',
       features: [routeFeature],
     })
+
+    return route
+  }
+
+  function drawCompletedRoute() {
+    if (!context) return
+
+    const route = drawRouteLine()
     clearRouteEndpointMarkers()
     routeEndpointMarkers = [
       createEndpointMarker(
@@ -284,6 +292,7 @@ export function useWorkMapExecution(options: WorkMapExecutionOptions) {
     const destinationCode = options.destinationCode()
     if (!departureCode || !destinationCode) return
 
+    clearRouteEndpointMarkers()
     routeEndpointMarkers = [
       createEndpointMarker(
         context.destination,
@@ -352,7 +361,7 @@ export function useWorkMapExecution(options: WorkMapExecutionOptions) {
     }
 
     if (phase === 'inProgress') {
-      removeRouteLayers()
+      drawRouteLine()
       context.vehicleMarker.setLngLat(context.start)
       drawDestinationMarker()
       animateVehicle()
